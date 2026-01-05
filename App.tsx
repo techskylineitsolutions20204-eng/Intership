@@ -8,16 +8,20 @@ import CareerCoach from './components/CareerCoach';
 import Registration from './components/Registration';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
+import About from './components/About';
+import Partners from './components/Partners';
+import Curriculum from './components/Curriculum';
+import Terms from './components/Terms';
 
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState('home');
 
   useEffect(() => {
-    window.scrollTo(0, 0);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [activeTab]);
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-slate-950 text-slate-200">
       <Navbar activeTab={activeTab} setActiveTab={setActiveTab} />
       
       <main className="flex-grow">
@@ -32,9 +36,13 @@ const App: React.FC = () => {
         {activeTab === 'career' && <CareerCoach />}
         {activeTab === 'register' && <Registration />}
         {activeTab === 'contact' && <Contact />}
+        {activeTab === 'about' && <About />}
+        {activeTab === 'partners' && <Partners />}
+        {activeTab === 'curriculum' && <Curriculum />}
+        {activeTab === 'terms' && <Terms />}
       </main>
 
-      <Footer />
+      <Footer setActiveTab={setActiveTab} />
     </div>
   );
 };
