@@ -1,0 +1,8 @@
+{
+  "name": "TechSkyline Internship Portal",
+  "description": "A comprehensive internship collaboration platform for TechSkyline IT Solutions, bridging the gap between universities and industry with advanced tech training and career guidance.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
