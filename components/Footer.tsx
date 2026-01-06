@@ -30,6 +30,9 @@ const Footer: React.FC<FooterProps> = ({ setActiveTab }) => {
                 <button onClick={() => setActiveTab('partners')} className="hover:text-blue-400 transition-colors">University Partners</button>
               </li>
               <li>
+                <button onClick={() => setActiveTab('self-learning')} className="hover:text-blue-400 transition-colors">AI Academy</button>
+              </li>
+              <li>
                 <button onClick={() => setActiveTab('curriculum')} className="hover:text-blue-400 transition-colors">Program Curriculum</button>
               </li>
               <li>

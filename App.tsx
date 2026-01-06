@@ -12,6 +12,7 @@ import About from './components/About';
 import Partners from './components/Partners';
 import Curriculum from './components/Curriculum';
 import Terms from './components/Terms';
+import SelfLearning from './components/SelfLearning';
 
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState('home');
@@ -34,6 +35,7 @@ const App: React.FC = () => {
         )}
         {activeTab === 'tech' && <TechStack onApply={() => setActiveTab('register')} />}
         {activeTab === 'career' && <CareerCoach />}
+        {activeTab === 'self-learning' && <SelfLearning />}
         {activeTab === 'register' && <Registration />}
         {activeTab === 'contact' && <Contact />}
         {activeTab === 'about' && <About />}
