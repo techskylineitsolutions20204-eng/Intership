@@ -15,6 +15,7 @@ interface Module {
   externalUrl?: string;
   platformColor?: string;
   icon?: string;
+  liveNotes?: string;
 }
 
 const SelfLearning: React.FC = () => {
@@ -46,67 +47,8 @@ const SelfLearning: React.FC = () => {
       tasks: ["Large Language Models", "Image Generation", "Attention Mechanisms"],
       externalUrl: PARTNER_LINKS.GCP_GENAI,
       platformColor: "blue",
-      icon: "fa-cloud"
-    },
-    {
-      id: 'deeplearning-prompt',
-      title: "ChatGPT Prompt Engineering",
-      category: "Specialist Track",
-      duration: "Short Course",
-      embedId: "",
-      recordedAt: "Partner Track",
-      instructor: "Andrew Ng / OpenAI",
-      labUrl: PARTNER_LINKS.DEEPLEARNING_AI,
-      description: "Learn how to use a large language model (LLM) to quickly build new and powerful applications. Taught by AI visionary Andrew Ng.",
-      tasks: ["Prompting Best Practices", "Iterative Prompting", "Summarizing & Inferring"],
-      externalUrl: PARTNER_LINKS.DEEPLEARNING_AI,
-      platformColor: "indigo",
-      icon: "fa-brain-circuit"
-    },
-    {
-      id: 'udacity-aws-ml',
-      title: "AWS ML Foundations",
-      category: "Cloud Mastery",
-      duration: "Self-Paced",
-      embedId: "",
-      recordedAt: "Udacity Partner",
-      instructor: "AWS Training Team",
-      labUrl: PARTNER_LINKS.UDACITY,
-      description: "Foundational course on Machine Learning using Amazon Web Services. Covers SageMaker and core AWS ML services.",
-      tasks: ["AWS SageMaker", "Model Deployment", "ML Case Studies"],
-      externalUrl: PARTNER_LINKS.UDACITY,
-      platformColor: "orange",
-      icon: "fa-aws"
-    },
-    {
-      id: 'kaggle-ml-intro',
-      title: "Intro to Machine Learning",
-      category: "Data Track",
-      duration: "3 Hours",
-      embedId: "",
-      recordedAt: "Hands-on",
-      instructor: "Kaggle Learn",
-      labUrl: PARTNER_LINKS.KAGGLE,
-      description: "Learn the core ideas in machine learning, and build your first models using real-world data science tools.",
-      tasks: ["Model Validation", "Underfitting & Overfitting", "Random Forests"],
-      externalUrl: PARTNER_LINKS.KAGGLE,
-      platformColor: "sky",
-      icon: "fa-chart-line"
-    },
-    {
-      id: 'gcp-ml-cert',
-      title: "GCP Professional ML Engineer",
-      category: "Professional Cert",
-      duration: "Intensive",
-      embedId: "",
-      recordedAt: "Official Prep",
-      instructor: "Google Training",
-      labUrl: PARTNER_LINKS.GCP_CERT,
-      description: "Official preparation path for the Google Cloud Professional Machine Learning Engineer certification.",
-      tasks: ["ML Pipeline Orchestration", "Feature Engineering at Scale", "Model Monitoring"],
-      externalUrl: PARTNER_LINKS.GCP_CERT,
-      platformColor: "red",
-      icon: "fa-certificate"
+      icon: "fa-cloud",
+      liveNotes: "Focus on vertex AI and generative AI studio. Essential for professional cloud certification."
     },
     {
       id: 'gen-ai-2026',
@@ -118,180 +60,180 @@ const SelfLearning: React.FC = () => {
       instructor: "Abhinav Joseph",
       labUrl: "#",
       description: "Class recording on building production-grade RAG systems and fine-tuning models for specific domain knowledge.",
-      tasks: ["Vector DB Integration", "Context Window Management", "Fine-tuning v/s RAG"]
+      tasks: ["Vector DB Integration", "Context Window Management", "Fine-tuning v/s RAG"],
+      liveNotes: "Key Takeaways:\n- RAG vs Fine-tuning tradeoffs\n- Vector indexing strategies\n- Hallucination mitigation techniques"
+    },
+    {
+      id: 'deeplearning-prompt',
+      title: "ChatGPT Prompt Engineering",
+      category: "Specialist Track",
+      duration: "Short Course",
+      embedId: "",
+      recordedAt: "Partner Track",
+      instructor: "Andrew Ng / OpenAI",
+      labUrl: PARTNER_LINKS.DEEPLEARNING_AI,
+      description: "Learn how to use a large language model (LLM) to quickly build new and powerful applications.",
+      tasks: ["Prompting Best Practices", "Iterative Prompting", "Summarizing & Inferring"],
+      externalUrl: PARTNER_LINKS.DEEPLEARNING_AI,
+      platformColor: "indigo",
+      icon: "fa-brain-circuit",
+      liveNotes: "Essential for all engineering roles. Focus on iterative refinement of prompts."
+    },
+    {
+      id: 'ai-ds-mastery',
+      title: "AI & Data Science Deep Dive",
+      category: "Skyline Original",
+      duration: "120 mins",
+      embedId: "i_LwzRVP7bg",
+      recordedAt: "Oct 12, 2025",
+      instructor: "Dr. Sarah Chen",
+      labUrl: "#",
+      description: "Session covering the complete pipeline from raw data to predictive modeling using Scikit-Learn and Pandas.",
+      tasks: ["Data Cleaning Workflows", "Feature Engineering", "Model Evaluation Metrics"],
+      liveNotes: "Notes:\n- Standardization of data is crucial\n- Feature importance visualization\n- Cross-validation best practices"
+    },
+    {
+      id: 'fullstack-modern',
+      title: "Full Stack Mastery (React 19 & Node)",
+      category: "Skyline Original",
+      duration: "150 mins",
+      embedId: "wS9S_O908yU",
+      recordedAt: "Feb 02, 2026",
+      instructor: "Emily Rodriguez",
+      labUrl: "#",
+      description: "Comprehensive class on end-to-end development using React 19 Server Components and Node.js.",
+      tasks: ["Server Components", "State Management v2026", "API Layer Security"],
+      liveNotes: "Update: React 19 features 'use' hook and server-side actions are now the standard."
     }
   ];
 
   return (
     <section className="py-24 bg-slate-950">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-16 flex flex-col lg:flex-row lg:items-end justify-between gap-8">
-          <div>
-            <div className="inline-flex items-center px-4 py-2 glass-card text-blue-400 rounded-full text-xs font-black uppercase tracking-widest mb-6">
-              <i className="fa-solid fa-graduation-cap mr-2"></i>
-              TechSkyline Academy Hub
-            </div>
-            <h2 className="text-5xl font-black text-white mb-6">Multi-Platform <span className="text-blue-500">Learning</span></h2>
-            <p className="text-xl text-slate-400 max-w-2xl leading-relaxed">
-              We've integrated the world's leading AI & ML curricula from Google, DeepLearning.AI, Udacity, and Kaggle into a unified mastery track.
-            </p>
+        <div className="mb-16">
+          <div className="inline-flex items-center px-4 py-2 glass-card text-blue-400 rounded-full text-xs font-black uppercase tracking-widest mb-6">
+            <i className="fa-solid fa-clapperboard mr-2"></i>
+            Recorded Training Archive
           </div>
-          
-          <div className="flex flex-wrap gap-3">
-             {Object.entries({
-               'Google': 'fa-google',
-               'AWS': 'fa-aws',
-               'OpenAI': 'fa-bolt',
-               'Kaggle': 'fa-database'
-             }).map(([name, icon]) => (
-               <div key={name} className="px-4 py-2 glass-card border-white/5 rounded-xl flex items-center gap-2">
-                 <i className={`fa-brands ${icon} text-blue-400 text-xs`}></i>
-                 <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{name} Partner</span>
-               </div>
-             ))}
-          </div>
+          <h2 className="text-5xl font-black text-white mb-6">Mastery <span className="text-blue-500">Repository</span></h2>
+          <p className="text-xl text-slate-400 max-w-2xl leading-relaxed">
+            Access recorded deep-dive sessions for every technology track. Each session includes live notes and expert curriculum mapping.
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
           {/* Sidebar */}
-          <div className="lg:col-span-1 space-y-4 max-h-[800px] overflow-y-auto pr-4 scrollbar-hide">
-            <h3 className="text-sm font-black text-slate-500 uppercase tracking-widest mb-4 px-2">Select Academy Track</h3>
-            {modules.map((mod) => (
-              <button
-                key={mod.id}
-                onClick={() => setSelectedModule(mod)}
-                className={`w-full text-left p-6 rounded-3xl transition-all border ${
-                  selectedModule?.id === mod.id 
-                    ? 'bg-blue-600 border-blue-400 shadow-xl shadow-blue-500/20' 
-                    : 'glass-card border-white/5 hover:border-white/10'
-                }`}
-              >
-                <div className="flex justify-between items-start mb-1">
-                  <span className={`text-[10px] font-black uppercase tracking-widest block ${
-                    selectedModule?.id === mod.id ? 'text-blue-100' : 'text-blue-500'
+          <div className="lg:col-span-4 space-y-4">
+            <h3 className="text-sm font-black text-slate-500 uppercase tracking-widest mb-4 px-2">Knowledge Domains</h3>
+            <div className="space-y-3 max-h-[700px] overflow-y-auto pr-2">
+              {modules.map((mod) => (
+                <button
+                  key={mod.id}
+                  onClick={() => setSelectedModule(mod)}
+                  className={`w-full text-left p-6 rounded-3xl transition-all border ${
+                    selectedModule?.id === mod.id 
+                      ? 'bg-blue-600 border-blue-400 shadow-xl shadow-blue-500/20' 
+                      : 'glass-card border-white/5 hover:border-white/10'
+                  }`}
+                >
+                  <div className="flex justify-between items-start mb-1">
+                    <span className={`text-[9px] font-black uppercase tracking-widest ${
+                      selectedModule?.id === mod.id ? 'text-blue-100' : 'text-blue-500'
+                    }`}>
+                      {mod.category}
+                    </span>
+                    <span className={`text-[10px] font-bold ${
+                      selectedModule?.id === mod.id ? 'text-blue-200' : 'text-slate-500'
+                    }`}>
+                      {mod.duration}
+                    </span>
+                  </div>
+                  <h4 className={`text-lg font-bold mb-2 ${
+                    selectedModule?.id === mod.id ? 'text-white' : 'text-slate-200'
                   }`}>
-                    {mod.category}
-                  </span>
-                  <span className={`text-[10px] font-bold ${
-                    selectedModule?.id === mod.id ? 'text-blue-200' : 'text-slate-500'
-                  }`}>
-                    {mod.duration}
-                  </span>
-                </div>
-                <h4 className={`text-lg font-bold mb-2 ${
-                  selectedModule?.id === mod.id ? 'text-white' : 'text-slate-200'
-                }`}>
-                  {mod.title}
-                </h4>
-                <div className="flex items-center justify-between">
-                  <span className={`text-[10px] font-bold ${
-                    selectedModule?.id === mod.id ? 'text-blue-100' : 'text-slate-500'
-                  }`}>
-                    By: {mod.instructor}
-                  </span>
-                  <span className={`text-xs flex items-center gap-1 ${
-                    selectedModule?.id === mod.id ? 'text-blue-100' : 'text-emerald-500 font-bold'
-                  }`}>
-                    <i className={`fa-solid ${mod.externalUrl ? 'fa-arrow-up-right-from-square' : 'fa-lock-open'} mr-1`}></i>
-                    {mod.externalUrl ? 'Platform' : 'Access'}
-                  </span>
-                </div>
-              </button>
-            ))}
+                    {mod.title}
+                  </h4>
+                  <div className="flex items-center justify-between">
+                    <span className={`text-[10px] font-bold ${
+                      selectedModule?.id === mod.id ? 'text-blue-100' : 'text-slate-500'
+                    }`}>
+                      By: {mod.instructor}
+                    </span>
+                  </div>
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Module Content */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-8">
             {!selectedModule ? (
-              <div className="h-full min-h-[500px] glass-card rounded-[3rem] border-dashed border-white/10 flex flex-col items-center justify-center text-center p-12">
-                <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mb-6 text-slate-600">
-                  <i className="fa-solid fa-graduation-cap text-3xl"></i>
-                </div>
-                <h3 className="text-2xl font-bold text-white mb-4">Start Your Specialization</h3>
-                <p className="text-slate-500 max-w-sm">Choose between TechSkyline originals or our certified partner tracks from global tech leaders.</p>
+              <div className="h-full min-h-[500px] glass-card rounded-[3rem] flex flex-col items-center justify-center text-center p-12">
+                <i className="fa-solid fa-film text-4xl text-slate-700 mb-6"></i>
+                <h3 className="text-2xl font-bold text-white mb-4">Select a domain session</h3>
+                <p className="text-slate-500 max-w-sm">Every tech track has dedicated high-definition session recordings and interactive notes.</p>
               </div>
             ) : (
-              <div className="animate-fade-in-up">
-                {selectedModule.externalUrl ? (
-                  <div className={`glass-card rounded-[3rem] p-12 lg:p-20 text-center flex flex-col items-center border-indigo-500/30 bg-gradient-to-br from-indigo-950/20 to-blue-950/20`}>
-                    <div className={`w-24 h-24 bg-blue-600 text-white rounded-3xl flex items-center justify-center mb-8 shadow-2xl shadow-blue-600/30`}>
-                      <i className={`fa-solid ${selectedModule.icon || 'fa-rocket'} text-4xl`}></i>
+              <div className="space-y-8 animate-fade-in-up">
+                {/* Visualizer / Embed */}
+                <div className="glass-card rounded-[3rem] overflow-hidden shadow-2xl relative">
+                  {selectedModule.externalUrl ? (
+                    <div className="p-16 lg:p-24 text-center">
+                       <i className={`fa-solid ${selectedModule.icon || 'fa-rocket'} text-5xl text-blue-500 mb-8`}></i>
+                       <h3 className="text-3xl font-black text-white mb-6">{selectedModule.title}</h3>
+                       <p className="text-slate-400 mb-10 max-w-lg mx-auto">{selectedModule.description}</p>
+                       <a href={selectedModule.externalUrl} target="_blank" rel="noopener noreferrer" className="px-10 py-4 bg-white text-slate-950 rounded-2xl font-black uppercase tracking-widest text-xs inline-flex items-center gap-3">
+                          Enter Platform Node
+                          <i className="fa-solid fa-arrow-up-right-from-square"></i>
+                       </a>
                     </div>
-                    <span className="text-xs font-black text-blue-400 uppercase tracking-widest mb-4">Official Training Node</span>
-                    <h3 className="text-4xl font-black text-white mb-6 leading-tight">{selectedModule.title}</h3>
-                    <p className="text-xl text-slate-400 mb-12 max-w-xl leading-relaxed">
-                      {selectedModule.description}
-                    </p>
-                    <a 
-                      href={selectedModule.externalUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="px-12 py-5 bg-white text-slate-950 rounded-2xl font-black uppercase tracking-[0.3em] text-sm hover:bg-slate-100 transition-all shadow-2xl shadow-white/10 flex items-center gap-4"
-                    >
-                      Enter Partner Platform
-                      <i className="fa-solid fa-arrow-up-right-from-square"></i>
-                    </a>
-                    <div className="mt-12 flex flex-wrap justify-center gap-4 opacity-60">
-                       {selectedModule.tasks.map((t, i) => (
-                         <span key={i} className="px-4 py-2 bg-white/5 border border-white/5 rounded-xl text-[10px] font-bold text-slate-300 uppercase tracking-widest">
-                           {t}
-                         </span>
-                       ))}
+                  ) : (
+                    <div className="aspect-video w-full bg-black">
+                      <iframe 
+                        className="w-full h-full"
+                        src={`https://www.youtube.com/embed/${selectedModule.embedId}?modestbranding=1&rel=0`}
+                        title={selectedModule.title}
+                        frameBorder="0"
+                        allowFullScreen
+                      ></iframe>
                     </div>
-                  </div>
-                ) : (
-                  <div className="space-y-8">
-                    {/* Video Player for Skyline Originals */}
-                    <div className="glass-card rounded-[2.5rem] overflow-hidden shadow-2xl">
-                       <div className="aspect-video w-full bg-black">
-                          <iframe 
-                            className="w-full h-full"
-                            src={`https://www.youtube.com/embed/${selectedModule.embedId}?autoplay=0&controls=1&modestbranding=1`}
-                            title={selectedModule.title}
-                            frameBorder="0"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowFullScreen
-                          ></iframe>
-                       </div>
-                       <div className="p-8 bg-slate-900 flex items-center justify-between border-t border-white/5">
-                          <div className="flex flex-col">
-                            <span className="text-xs font-black text-white uppercase tracking-widest mb-1">{selectedModule.title}</span>
-                            <span className="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Archived Session • instructor: {selectedModule.instructor}</span>
-                          </div>
-                          <button className="px-6 py-2 glass-card rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-300 hover:text-white transition-colors">
-                            Download Notes
-                          </button>
-                       </div>
-                    </div>
+                  )}
+                </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                      <div className="glass-card rounded-[2.5rem] p-8 border-blue-500/20">
-                        <h4 className="text-lg font-bold text-white mb-4">Session Abstract</h4>
-                        <p className="text-slate-400 text-sm leading-relaxed mb-6">{selectedModule.description}</p>
-                        <div className="flex items-center gap-4">
-                           <div className="w-10 h-10 rounded-full bg-blue-600/20 flex items-center justify-center text-blue-400">
-                             <i className="fa-solid fa-user-graduate text-sm"></i>
-                           </div>
-                           <div className="flex flex-col">
-                             <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Lead Faculty</span>
-                             <span className="text-xs font-bold text-white">{selectedModule.instructor}</span>
-                           </div>
-                        </div>
-                      </div>
-                      <div className="glass-card rounded-[2.5rem] p-8 border-emerald-500/20">
-                        <h4 className="text-lg font-bold text-white mb-4">Milestones</h4>
-                        <div className="space-y-3">
-                          {selectedModule.tasks.map((t, i) => (
-                            <div key={i} className="flex items-center gap-3 text-xs text-slate-300">
-                              <i className="fa-solid fa-circle-check text-emerald-500"></i>
-                              <span>{t}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
+                {/* Session Details & Interactive Notes */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="glass-card rounded-[2.5rem] p-8">
+                     <h4 className="text-sm font-black text-white uppercase tracking-widest mb-6 flex items-center gap-2">
+                        <i className="fa-solid fa-list-check text-blue-500"></i>
+                        Session Milestones
+                     </h4>
+                     <div className="space-y-4">
+                        {selectedModule.tasks.map((t, i) => (
+                          <div key={i} className="flex items-center gap-3 text-sm text-slate-400">
+                             <div className="w-5 h-5 rounded-full bg-blue-600/10 flex items-center justify-center text-blue-500 text-[10px]">
+                                <i className="fa-solid fa-check"></i>
+                             </div>
+                             <span>{t}</span>
+                          </div>
+                        ))}
+                     </div>
                   </div>
-                )}
+
+                  <div className="glass-card rounded-[2.5rem] p-8 border-indigo-500/20">
+                     <h4 className="text-sm font-black text-white uppercase tracking-widest mb-6 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                           <i className="fa-solid fa-note-sticky text-indigo-500"></i>
+                           Session Insights
+                        </div>
+                        <span className="text-[9px] px-2 py-0.5 bg-indigo-600/20 text-indigo-400 rounded">Verified</span>
+                     </h4>
+                     <div className="bg-black/20 p-6 rounded-2xl border border-white/5">
+                        <p className="text-xs font-mono text-slate-400 leading-relaxed whitespace-pre-wrap">
+                           {selectedModule.liveNotes || "Notes for this session are being transcribed..."}
+                        </p>
+                     </div>
+                  </div>
+                </div>
               </div>
             )}
           </div>
