@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { GoogleGenAI } from "@google/genai";
 
 interface LabInstance {
   id: string;
@@ -78,8 +79,16 @@ const LiveLabs: React.FC = () => {
   const [isSyncing, setIsSyncing] = useState(false);
   const [savedSessions, setSavedSessions] = useState<SavedSession[]>([]);
   const [showExitModal, setShowExitModal] = useState(false);
+  const [isSummarizing, setIsSummarizing] = useState(false);
   
   const terminalInputRef = useRef<HTMLInputElement>(null);
+  const terminalEndRef = useRef<HTMLDivElement>(null);
+  const notesRef = useRef<HTMLTextAreaElement>(null);
+
+  // Auto-scroll terminal
+  useEffect(() => {
+    terminalEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [terminalLogs]);
 
   const fetchStatuses = useCallback(async () => {
     setIsSyncing(true);
@@ -237,6 +246,40 @@ const LiveLabs: React.FC = () => {
     setLabStatus('reviewing');
   };
 
+  // Note actions
+  const addTimestamp = () => {
+    const ts = `\n[${new Date().toLocaleTimeString()}] `;
+    setSessionNotes(prev => prev + ts);
+    setTimeout(() => notesRef.current?.focus(), 10);
+  };
+
+  const clearNotes = () => {
+    if (window.confirm("Clear all session notes?")) {
+      setSessionNotes("");
+    }
+  };
+
+  const generateAISummary = async () => {
+    if (isSummarizing || terminalLogs.length < 5) return;
+    setIsSummarizing(true);
+    
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const prompt = `Based on these terminal logs from a ${activeLab?.name} session, provide a 3-sentence technical summary of the activities and achievements for my session notes: \n\n${terminalLogs.slice(-20).join('\n')}`;
+
+    try {
+      const response = await ai.models.generateContent({
+        model: 'gemini-3-flash-preview',
+        contents: prompt
+      });
+      const summary = response.text || "AI analysis unavailable.";
+      setSessionNotes(prev => prev + `\n\n--- AI SESSION SUMMARY ---\n${summary}\n`);
+    } catch (error) {
+      console.error("AI Summary Error:", error);
+    } finally {
+      setIsSummarizing(false);
+    }
+  };
+
   if (labStatus === 'reviewing' && reviewSession) {
     return (
       <div className="fixed inset-0 z-[100] bg-slate-950 flex flex-col animate-fade-in-up">
@@ -362,16 +405,40 @@ const LiveLabs: React.FC = () => {
              </div>
 
              {/* Live Session Notes */}
-             <div className="h-64 p-6 bg-black/20">
-                <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 flex items-center justify-between">
-                  Interactive Notes
-                  <i className="fa-solid fa-pen-to-square text-indigo-500"></i>
-                </h3>
+             <div className="h-80 bg-black/40 flex flex-col">
+                <div className="p-4 border-b border-white/5 flex items-center justify-between bg-slate-900/50">
+                   <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Interactive Notes</h3>
+                   <div className="flex gap-2">
+                      <button 
+                        onClick={addTimestamp}
+                        title="Add Timestamp"
+                        className="w-6 h-6 rounded bg-white/5 flex items-center justify-center text-[10px] text-slate-400 hover:text-white hover:bg-indigo-600 transition-all"
+                      >
+                         <i className="fa-solid fa-clock"></i>
+                      </button>
+                      <button 
+                        onClick={generateAISummary}
+                        title="AI Summarize Session"
+                        disabled={isSummarizing}
+                        className={`w-6 h-6 rounded bg-white/5 flex items-center justify-center text-[10px] transition-all ${isSummarizing ? 'text-indigo-400 animate-spin' : 'text-slate-400 hover:text-white hover:bg-indigo-600'}`}
+                      >
+                         <i className="fa-solid fa-wand-sparkles"></i>
+                      </button>
+                      <button 
+                        onClick={clearNotes}
+                        title="Clear Notes"
+                        className="w-6 h-6 rounded bg-white/5 flex items-center justify-center text-[10px] text-slate-400 hover:text-red-500 hover:bg-red-500/10 transition-all"
+                      >
+                         <i className="fa-solid fa-trash-can"></i>
+                      </button>
+                   </div>
+                </div>
                 <textarea 
-                  className="w-full h-full bg-transparent border-none outline-none text-[11px] font-mono text-emerald-500/80 resize-none leading-relaxed"
+                  ref={notesRef}
+                  className="flex-grow w-full bg-transparent border-none outline-none p-4 text-[11px] font-mono text-emerald-500/80 resize-none leading-relaxed placeholder:text-slate-700"
                   value={sessionNotes}
                   onChange={(e) => setSessionNotes(e.target.value)}
-                  placeholder="Draft your session insights here..."
+                  placeholder="Draft your session insights here. Use AI tool for automatic summarization..."
                 />
              </div>
           </div>
@@ -459,6 +526,7 @@ const LiveLabs: React.FC = () => {
                       autoFocus 
                     />
                   </form>
+                  <div ref={terminalEndRef} />
                </div>
             </div>
           </div>
