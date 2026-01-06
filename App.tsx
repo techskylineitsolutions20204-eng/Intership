@@ -29,10 +29,10 @@ const App: React.FC = () => {
           <>
             <Hero onRegister={() => setActiveTab('register')} />
             <Collaboration />
-            <TechStack />
+            <TechStack onApply={() => setActiveTab('register')} />
           </>
         )}
-        {activeTab === 'tech' && <TechStack />}
+        {activeTab === 'tech' && <TechStack onApply={() => setActiveTab('register')} />}
         {activeTab === 'career' && <CareerCoach />}
         {activeTab === 'register' && <Registration />}
         {activeTab === 'contact' && <Contact />}
