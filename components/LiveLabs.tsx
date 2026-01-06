@@ -67,31 +67,54 @@ const LiveLabs: React.FC = () => {
   ]);
 
   const [activeLab, setActiveLab] = useState<LabInstance | null>(null);
-  const [labStatus, setLabStatus] = useState<'idle' | 'loading' | 'active'>('idle');
+  const [labStatus, setLabStatus] = useState<'idle' | 'loading' | 'active' | 'reviewing'>('idle');
+  const [reviewSession, setReviewSession] = useState<SavedSession | null>(null);
   const [terminalLogs, setTerminalLogs] = useState<string[]>([]);
   const [bootProgress, setBootProgress] = useState(0);
   const [mentorMessages, setMentorMessages] = useState<MentorMessage[]>([]);
   const [sessionNotes, setSessionNotes] = useState<string>("Initializing session notes...");
   const [isRecording, setIsRecording] = useState(false);
   const [recordingStatus, setRecordingStatus] = useState<'idle' | 'recording' | 'saved'>('idle');
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [savedSessions, setSavedSessions] = useState<SavedSession[]>([]);
+  
   const terminalInputRef = useRef<HTMLInputElement>(null);
 
+  // Simulated API fetch for live status
   const fetchStatuses = useCallback(async () => {
+    setIsSyncing(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 600));
+      // Mimic network latency
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
       setLabs(currentLabs => currentLabs.map(lab => {
+        // Don't override statuses of labs that are in transition or currently active
         if (activeLab?.id === lab.id || lab.status === 'provisioning') return lab;
-        const isMaintenance = Math.random() > 0.95;
-        return { ...lab, status: isMaintenance ? 'online' : 'offline' };
+        
+        // Dynamic status logic: some labs might be spinning up or online in the background
+        const roll = Math.random();
+        let newStatus: LabInstance['status'] = 'offline';
+        if (roll > 0.95) newStatus = 'online';
+        else if (roll > 0.90) newStatus = 'provisioning';
+        
+        return { ...lab, status: newStatus };
       }));
     } catch (error) {
       console.error("Failed to sync lab statuses:", error);
+    } finally {
+      setIsSyncing(false);
     }
   }, [activeLab]);
 
+  // Initial sync and polling
   useEffect(() => {
     fetchStatuses();
-    const interval = setInterval(fetchStatuses, 15000);
+    const interval = setInterval(fetchStatuses, 12000);
+    
+    // Load saved sessions from local storage
+    const stored = localStorage.getItem('skyline_recorded_sessions');
+    if (stored) setSavedSessions(JSON.parse(stored));
+
     return () => clearInterval(interval);
   }, [fetchStatuses]);
 
@@ -153,11 +176,15 @@ const LiveLabs: React.FC = () => {
     setMentorMessages([]);
     setSessionNotes("");
     setIsRecording(false);
+    setReviewSession(null);
+    
+    // Refresh the sessions list
+    const stored = localStorage.getItem('skyline_recorded_sessions');
+    if (stored) setSavedSessions(JSON.parse(stored));
   };
 
   const toggleRecording = () => {
     if (isRecording) {
-      // Stopping recording - Save to local storage
       const sessionData: SavedSession = {
         id: `session_${Date.now()}`,
         labName: activeLab?.name || 'Unknown Lab',
@@ -168,7 +195,9 @@ const LiveLabs: React.FC = () => {
       
       const existingSessionsStr = localStorage.getItem('skyline_recorded_sessions');
       const existingSessions = existingSessionsStr ? JSON.parse(existingSessionsStr) : [];
-      localStorage.setItem('skyline_recorded_sessions', JSON.stringify([...existingSessions, sessionData]));
+      const updatedSessions = [...existingSessions, sessionData];
+      localStorage.setItem('skyline_recorded_sessions', JSON.stringify(updatedSessions));
+      setSavedSessions(updatedSessions);
       
       setIsRecording(false);
       setRecordingStatus('saved');
@@ -203,6 +232,43 @@ const LiveLabs: React.FC = () => {
       }
     }, 300);
   };
+
+  const viewRecordedSession = (session: SavedSession) => {
+    setReviewSession(session);
+    setLabStatus('reviewing');
+  };
+
+  if (labStatus === 'reviewing' && reviewSession) {
+    return (
+      <div className="fixed inset-0 z-[100] bg-slate-950 flex flex-col animate-fade-in-up">
+        <div className="h-14 bg-slate-900 border-b border-white/5 flex items-center justify-between px-6">
+          <div className="flex items-center gap-4">
+            <span className="text-xs font-black uppercase tracking-widest text-indigo-400">Reviewing Session</span>
+            <span className="text-xs text-white font-bold">{reviewSession.labName}</span>
+          </div>
+          <button onClick={closeLab} className="text-slate-400 hover:text-white px-4 py-2 text-[10px] font-black uppercase tracking-widest">
+            Close Review
+          </button>
+        </div>
+        <div className="flex-grow flex overflow-hidden">
+          <div className="w-80 bg-slate-900 border-r border-white/5 p-6 overflow-y-auto">
+            <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">Saved Session Notes</h3>
+            <div className="bg-black/20 p-4 rounded-xl border border-white/5 font-mono text-[11px] text-emerald-500/80 whitespace-pre-wrap leading-relaxed">
+              {reviewSession.notes}
+            </div>
+          </div>
+          <div className="flex-grow bg-black p-8 overflow-y-auto font-mono text-xs">
+            <div className="text-slate-500 mb-4 border-b border-white/5 pb-2 uppercase tracking-widest">Recorded Terminal History</div>
+            {reviewSession.logs.map((log, i) => (
+              <div key={i} className="mb-1">
+                {log.startsWith('root@skyline') ? <span className="text-emerald-500">{log}</span> : <span className="text-slate-300">{log}</span>}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (labStatus === 'active' && activeLab) {
     return (
@@ -409,22 +475,29 @@ const LiveLabs: React.FC = () => {
               Launch dedicated lab instances for hands-on technical sessions. Every lab includes an interactive terminal, live mentor guidance, and real-time collaboration tools.
             </p>
           </div>
+          <div className="flex items-center gap-3 glass-card px-6 py-3 rounded-2xl border-white/5">
+            <span className={`w-2 h-2 rounded-full ${isSyncing ? 'bg-indigo-500 animate-pulse' : 'bg-emerald-500'}`}></span>
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+              {isSyncing ? 'Syncing Infrastructure Status...' : 'Real-time Health: Operational'}
+            </span>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
+        {/* Labs Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 mb-24">
           {labs.map((lab) => (
-            <div key={lab.id} className="glass-card rounded-[3rem] p-10 border-white/5 flex flex-col justify-between hover:border-indigo-500/30 transition-all">
+            <div key={lab.id} className="glass-card rounded-[3rem] p-10 border-white/5 flex flex-col justify-between hover:border-indigo-500/30 transition-all group">
               <div>
                 <div className="flex justify-between items-start mb-8">
-                  <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center text-2xl text-white border border-white/10 group-hover:border-indigo-500/50">
+                  <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center text-2xl text-white border border-white/10 group-hover:border-indigo-500/50 group-hover:scale-105 transition-all">
                     <i className={`fa-solid ${lab.icon}`}></i>
                   </div>
                   <span className={`px-3 py-1 bg-white/5 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-2 ${
-                    lab.status === 'online' ? 'text-emerald-400' : 
+                    lab.status === 'online' ? 'text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.1)]' : 
                     lab.status === 'provisioning' ? 'text-amber-400' : 'text-slate-400'
                   }`}>
-                    <span className={`w-1.5 h-1.5 rounded-full ${lab.status === 'online' ? 'bg-emerald-500' : lab.status === 'provisioning' ? 'bg-amber-500 animate-pulse' : 'bg-slate-600'}`}></span>
-                    {lab.status === 'online' ? 'Online' : lab.status === 'provisioning' ? 'Provisioning' : 'Standby'}
+                    <span className={`w-1.5 h-1.5 rounded-full ${lab.status === 'online' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : lab.status === 'provisioning' ? 'bg-amber-500 animate-pulse' : 'bg-slate-600'}`}></span>
+                    {lab.status === 'online' ? 'Active Pool' : lab.status === 'provisioning' ? 'Warming Up' : 'On Standby'}
                   </span>
                 </div>
                 
@@ -445,11 +518,56 @@ const LiveLabs: React.FC = () => {
                 disabled={lab.status === 'provisioning'}
                 className="w-full py-5 bg-white hover:bg-indigo-600 text-slate-950 hover:text-white rounded-[2rem] font-black uppercase tracking-[0.3em] text-xs transition-all flex items-center justify-center gap-3 disabled:opacity-50"
               >
-                Launch Live Practice
+                Launch Practice Node
                 <i className="fa-solid fa-play text-[10px]"></i>
               </button>
             </div>
           ))}
+        </div>
+
+        {/* Recording Hub Section */}
+        <div className="mt-24">
+          <div className="flex items-center justify-between mb-12">
+            <div>
+               <h3 className="text-3xl font-black text-white mb-2">Practice Recording <span className="text-indigo-500">Hub</span></h3>
+               <p className="text-slate-500 text-sm font-bold uppercase tracking-widest">Revisit your technical practice history</p>
+            </div>
+            <i className="fa-solid fa-clock-rotate-left text-3xl text-slate-800"></i>
+          </div>
+
+          {savedSessions.length === 0 ? (
+            <div className="p-16 glass-card rounded-[3rem] border-dashed border-white/5 text-center">
+              <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6 text-slate-700">
+                <i className="fa-solid fa-database text-2xl"></i>
+              </div>
+              <h4 className="text-xl font-bold text-white mb-2">No Saved Sessions</h4>
+              <p className="text-slate-500 max-w-sm mx-auto">Start a live practice lab and use the 'Record Session' tool to save your work logs and notes here.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {savedSessions.map((session) => (
+                <div key={session.id} className="glass-card rounded-[2.5rem] p-8 border-white/5 hover:border-white/10 transition-all flex flex-col justify-between group">
+                  <div>
+                    <div className="flex justify-between items-start mb-6">
+                      <div className="w-10 h-10 rounded-xl bg-indigo-600/20 text-indigo-400 flex items-center justify-center">
+                        <i className="fa-solid fa-file-waveform"></i>
+                      </div>
+                      <span className="text-[9px] font-black text-slate-600 uppercase tracking-widest">{new Date(session.timestamp).toLocaleDateString()}</span>
+                    </div>
+                    <h4 className="text-lg font-bold text-white mb-1">{session.labName}</h4>
+                    <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest mb-4">Saved Practice Data</p>
+                    <p className="text-xs text-slate-400 line-clamp-2 italic">"{session.notes.substring(0, 100)}..."</p>
+                  </div>
+                  <button 
+                    onClick={() => viewRecordedSession(session)}
+                    className="mt-8 w-full py-3 bg-white/5 hover:bg-white/10 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border border-white/5 group-hover:border-indigo-500/50"
+                  >
+                    View Recording
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </section>
