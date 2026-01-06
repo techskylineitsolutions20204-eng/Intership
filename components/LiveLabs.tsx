@@ -77,26 +77,20 @@ const LiveLabs: React.FC = () => {
   const [recordingStatus, setRecordingStatus] = useState<'idle' | 'recording' | 'saved'>('idle');
   const [isSyncing, setIsSyncing] = useState(false);
   const [savedSessions, setSavedSessions] = useState<SavedSession[]>([]);
+  const [showExitModal, setShowExitModal] = useState(false);
   
   const terminalInputRef = useRef<HTMLInputElement>(null);
 
-  // Simulated API fetch for live status
   const fetchStatuses = useCallback(async () => {
     setIsSyncing(true);
     try {
-      // Mimic network latency
       await new Promise(resolve => setTimeout(resolve, 800));
-      
       setLabs(currentLabs => currentLabs.map(lab => {
-        // Don't override statuses of labs that are in transition or currently active
         if (activeLab?.id === lab.id || lab.status === 'provisioning') return lab;
-        
-        // Dynamic status logic: some labs might be spinning up or online in the background
         const roll = Math.random();
         let newStatus: LabInstance['status'] = 'offline';
         if (roll > 0.95) newStatus = 'online';
         else if (roll > 0.90) newStatus = 'provisioning';
-        
         return { ...lab, status: newStatus };
       }));
     } catch (error) {
@@ -106,15 +100,11 @@ const LiveLabs: React.FC = () => {
     }
   }, [activeLab]);
 
-  // Initial sync and polling
   useEffect(() => {
     fetchStatuses();
     const interval = setInterval(fetchStatuses, 12000);
-    
-    // Load saved sessions from local storage
     const stored = localStorage.getItem('skyline_recorded_sessions');
     if (stored) setSavedSessions(JSON.parse(stored));
-
     return () => clearInterval(interval);
   }, [fetchStatuses]);
 
@@ -124,6 +114,7 @@ const LiveLabs: React.FC = () => {
     setLabStatus('loading');
     setBootProgress(0);
     setRecordingStatus('idle');
+    setShowExitModal(false);
     setTerminalLogs([
       `[AUTH] Authenticating session for TechSkyline Node...`,
       `[PROVISION] Requesting ${lab.type} resource...`,
@@ -166,7 +157,28 @@ const LiveLabs: React.FC = () => {
     }, 400);
   };
 
-  const closeLab = () => {
+  const saveCurrentSession = () => {
+    const sessionData: SavedSession = {
+      id: `session_${Date.now()}`,
+      labName: activeLab?.name || 'Unknown Lab',
+      timestamp: new Date().toISOString(),
+      logs: terminalLogs,
+      notes: sessionNotes
+    };
+    
+    const existingSessionsStr = localStorage.getItem('skyline_recorded_sessions');
+    const existingSessions = existingSessionsStr ? JSON.parse(existingSessionsStr) : [];
+    const updatedSessions = [...existingSessions, sessionData];
+    localStorage.setItem('skyline_recorded_sessions', JSON.stringify(updatedSessions));
+    setSavedSessions(updatedSessions);
+    return sessionData;
+  };
+
+  const closeLab = (save: boolean = false) => {
+    if (save) {
+      saveCurrentSession();
+    }
+    
     if (activeLab) {
       setLabs(prev => prev.map(l => l.id === activeLab.id ? { ...l, status: 'offline' } : l));
     }
@@ -177,28 +189,15 @@ const LiveLabs: React.FC = () => {
     setSessionNotes("");
     setIsRecording(false);
     setReviewSession(null);
+    setShowExitModal(false);
     
-    // Refresh the sessions list
     const stored = localStorage.getItem('skyline_recorded_sessions');
     if (stored) setSavedSessions(JSON.parse(stored));
   };
 
   const toggleRecording = () => {
     if (isRecording) {
-      const sessionData: SavedSession = {
-        id: `session_${Date.now()}`,
-        labName: activeLab?.name || 'Unknown Lab',
-        timestamp: new Date().toISOString(),
-        logs: terminalLogs,
-        notes: sessionNotes
-      };
-      
-      const existingSessionsStr = localStorage.getItem('skyline_recorded_sessions');
-      const existingSessions = existingSessionsStr ? JSON.parse(existingSessionsStr) : [];
-      const updatedSessions = [...existingSessions, sessionData];
-      localStorage.setItem('skyline_recorded_sessions', JSON.stringify(updatedSessions));
-      setSavedSessions(updatedSessions);
-      
+      saveCurrentSession();
       setIsRecording(false);
       setRecordingStatus('saved');
       setTimeout(() => setRecordingStatus('idle'), 3000);
@@ -246,7 +245,7 @@ const LiveLabs: React.FC = () => {
             <span className="text-xs font-black uppercase tracking-widest text-indigo-400">Reviewing Session</span>
             <span className="text-xs text-white font-bold">{reviewSession.labName}</span>
           </div>
-          <button onClick={closeLab} className="text-slate-400 hover:text-white px-4 py-2 text-[10px] font-black uppercase tracking-widest">
+          <button onClick={() => closeLab(false)} className="text-slate-400 hover:text-white px-4 py-2 text-[10px] font-black uppercase tracking-widest">
             Close Review
           </button>
         </div>
@@ -298,13 +297,49 @@ const LiveLabs: React.FC = () => {
              </button>
              <div className="h-6 w-px bg-white/10 mx-1"></div>
              <button 
-               onClick={closeLab}
+               onClick={() => setShowExitModal(true)}
                className="px-4 py-1.5 bg-red-600 hover:bg-red-700 text-white text-[10px] font-black uppercase tracking-widest rounded-lg transition-all"
              >
                End Practice
              </button>
           </div>
         </div>
+
+        {/* Termination Prompt Modal */}
+        {showExitModal && (
+          <div className="fixed inset-0 z-[110] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+            <div className="glass-card rounded-[2.5rem] max-w-md w-full p-10 border-white/10 shadow-2xl animate-fade-in-up">
+              <div className="w-16 h-16 bg-red-600/20 rounded-2xl flex items-center justify-center mb-6 mx-auto text-red-500">
+                <i className="fa-solid fa-power-off text-2xl"></i>
+              </div>
+              <h3 className="text-2xl font-black text-white text-center mb-4 uppercase tracking-tight">Terminate Session?</h3>
+              <p className="text-slate-400 text-center mb-8 leading-relaxed">
+                Would you like to save your terminal logs and interactive notes to the Recording Hub before closing this instance?
+              </p>
+              <div className="flex flex-col gap-3">
+                <button 
+                  onClick={() => closeLab(true)}
+                  className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-black uppercase tracking-widest text-xs transition-all shadow-lg shadow-indigo-600/20 flex items-center justify-center gap-2"
+                >
+                  <i className="fa-solid fa-cloud-arrow-up"></i>
+                  Save & Exit Session
+                </button>
+                <button 
+                  onClick={() => closeLab(false)}
+                  className="w-full py-4 bg-white/5 hover:bg-red-600 hover:text-white text-slate-400 rounded-xl font-black uppercase tracking-widest text-xs transition-all border border-white/5"
+                >
+                  Exit Without Saving
+                </button>
+                <button 
+                  onClick={() => setShowExitModal(false)}
+                  className="w-full py-3 text-slate-600 hover:text-white transition-colors text-[10px] font-black uppercase tracking-widest"
+                >
+                  Continue Practicing
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Content Wrapper */}
         <div className="flex-grow flex overflow-hidden">
