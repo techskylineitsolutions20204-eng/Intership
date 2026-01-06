@@ -5,12 +5,18 @@ import { Message } from '../types';
 
 const CareerCoach: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'model', text: "Welcome to the TechSkyline 2026 Career Strategy Hub. I am your Senior Architect assistant. Let's design your complete career roadmap from baseline to industry lead." }
+    { role: 'model', text: "Welcome to the TechSkyline 2026 Career Strategy Hub. I am your Senior Architect assistant. Let's design your complete career roadmap—from your first Sandbox commit to full Production Live Access." }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [trackedSkills, setTrackedSkills] = useState<string[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const envTiers = [
+    { id: 'sandbox', label: 'The Sandbox', icon: 'fa-box-open', color: 'text-emerald-400', desc: 'Dev/Experimental Access' },
+    { id: 'staging', label: 'The Staging Area', icon: 'fa-server', color: 'text-amber-400', desc: 'UAT & Quality Gateway' },
+    { id: 'live', label: 'Live Access', icon: 'fa-bolt', color: 'text-red-500', desc: 'Production Deployment' }
+  ];
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -78,14 +84,14 @@ const CareerCoach: React.FC = () => {
       <div className="space-y-6">
         <div className="prose prose-invert prose-slate max-w-none text-slate-300 leading-relaxed text-base">
           {cleanText.split('\n').map((line, i) => (
-            <p key={i} className={line.startsWith('#') ? 'text-white font-black mt-6 mb-2' : ''}>
+            <p key={i} className={line.startsWith('#') || line.startsWith('🎯') || line.startsWith('🗺️') || line.startsWith('🛠️') || line.startsWith('🔐') ? 'text-white font-black mt-6 mb-2 border-l-2 border-indigo-500 pl-4' : ''}>
               {line}
             </p>
           ))}
         </div>
         {skillsFound.length > 0 && (
           <div className="pt-6 border-t border-white/5">
-            <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest block mb-3">Roadmap Milestones:</span>
+            <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest block mb-3">Add to Roadmap:</span>
             <div className="flex flex-wrap gap-2">
               {skillsFound.map((skill, i) => (
                 <button
@@ -109,6 +115,13 @@ const CareerCoach: React.FC = () => {
     );
   };
 
+  // Logic to determine environment tier progress based on skill count
+  const getProgressTier = () => {
+    if (trackedSkills.length > 10) return 2; // Live
+    if (trackedSkills.length > 5) return 1; // Staging
+    return 0; // Sandbox
+  };
+
   return (
     <section className="py-24 bg-slate-950 relative overflow-hidden">
       <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none" style={{ backgroundImage: 'radial-gradient(#4f46e5 1px, transparent 1px)', backgroundSize: '40px 40px' }}></div>
@@ -120,7 +133,7 @@ const CareerCoach: React.FC = () => {
             Strategic Consultation Mode
           </div>
           <h2 className="text-5xl font-black text-white tracking-tight">2026 Career Architect</h2>
-          <p className="text-slate-400 mt-4 text-xl max-w-3xl mx-auto">Get a verified industry roadmap tailored for the post-AI era.</p>
+          <p className="text-slate-400 mt-4 text-xl max-w-3xl mx-auto">Verified industry roadmaps for the high-access engineering era.</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
@@ -135,7 +148,7 @@ const CareerCoach: React.FC = () => {
                   <h3 className="text-sm font-black text-white uppercase tracking-wider">Skyline Architect</h3>
                   <span className="text-[10px] text-emerald-400 font-bold uppercase flex items-center gap-1">
                     <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"></span>
-                    Ready for analysis
+                    Systems Online
                   </span>
                 </div>
               </div>
@@ -174,7 +187,7 @@ const CareerCoach: React.FC = () => {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                  placeholder="e.g. Map out a Frontend path focused on React 19"
+                  placeholder="e.g. Help me reach Live Access as a DevOps Engineer"
                   className="flex-grow pl-8 pr-14 py-6 bg-white/5 border border-white/10 rounded-3xl focus:border-indigo-500 outline-none transition-all text-white text-lg placeholder:text-slate-600"
                   disabled={isLoading}
                 />
@@ -192,58 +205,78 @@ const CareerCoach: React.FC = () => {
           {/* Sidebar: Path Progress */}
           <div className="lg:col-span-4 space-y-8">
             <div className="glass-card rounded-[3rem] p-10 sticky top-24">
-              <h3 className="text-xl font-black text-white mb-8 flex items-center gap-3">
+              
+              {/* Environment Access Roadmap */}
+              <div className="mb-10 pb-10 border-b border-white/5">
+                <h3 className="text-sm font-black text-white mb-6 uppercase tracking-widest flex items-center gap-2">
+                  <i className="fa-solid fa-shield-halved text-indigo-500"></i>
+                  Access Permissions
+                </h3>
+                <div className="space-y-4">
+                  {envTiers.map((tier, idx) => (
+                    <div key={tier.id} className={`relative flex items-center gap-4 p-4 rounded-2xl border transition-all ${
+                      idx <= getProgressTier() 
+                        ? 'bg-white/5 border-indigo-500/30' 
+                        : 'bg-black/20 border-white/5 opacity-40 grayscale'
+                    }`}>
+                      <div className={`w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-lg ${tier.color}`}>
+                        <i className={`fa-solid ${tier.icon}`}></i>
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-[10px] font-black text-white uppercase tracking-wider">{tier.label}</span>
+                        <span className="text-[9px] text-slate-500 font-bold">{tier.desc}</span>
+                      </div>
+                      {idx <= getProgressTier() && (
+                        <div className="absolute right-4">
+                           <i className="fa-solid fa-check-circle text-emerald-500"></i>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <h3 className="text-sm font-black text-white mb-6 flex items-center gap-3 uppercase tracking-widest">
                 <i className="fa-solid fa-route text-indigo-500"></i>
-                Your Skill Repository
+                Skill Repository
               </h3>
 
               {trackedSkills.length === 0 ? (
-                <div className="py-20 text-center space-y-4">
-                  <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto text-slate-600">
-                    <i className="fa-solid fa-map text-3xl"></i>
+                <div className="py-12 text-center space-y-4">
+                  <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto text-slate-700">
+                    <i className="fa-solid fa-map text-2xl"></i>
                   </div>
-                  <p className="text-slate-500 font-medium">No skills mapped yet. Consult the Architect.</p>
+                  <p className="text-slate-500 text-xs font-bold uppercase tracking-widest">Repository Empty</p>
                 </div>
               ) : (
-                <div className="space-y-6 max-h-[500px] overflow-y-auto pr-4">
+                <div className="space-y-4 max-h-[300px] overflow-y-auto pr-4 custom-scrollbar">
                   {trackedSkills.map((skill, idx) => (
-                    <div key={idx} className="group glass-card border-indigo-500/20 p-5 rounded-2xl animate-fade-in-up relative">
+                    <div key={idx} className="group bg-white/5 border border-white/5 p-4 rounded-2xl animate-fade-in-up relative hover:border-indigo-500/30 transition-all">
                       <button 
                         onClick={() => handleRemoveSkill(skill)}
-                        className="absolute top-4 right-4 text-slate-600 hover:text-red-500 transition-colors"
+                        className="absolute top-2 right-2 w-6 h-6 rounded-lg bg-red-500/10 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
                       >
-                        <i className="fa-solid fa-trash-can text-xs"></i>
+                        <i className="fa-solid fa-xmark text-[10px]"></i>
                       </button>
-                      <div className="flex flex-col gap-3">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center text-indigo-400">
-                            <i className="fa-solid fa-rocket text-xs"></i>
-                          </div>
-                          <span className="text-base font-bold text-white tracking-tight">{skill}</span>
-                        </div>
-                        <div className="w-full bg-white/5 rounded-full h-1 overflow-hidden">
-                          <div className="bg-indigo-500 h-full w-[45%]" style={{ width: `${Math.floor(Math.random() * 60) + 20}%` }}></div>
-                        </div>
-                        <div className="flex justify-between text-[9px] font-black uppercase tracking-widest text-slate-500">
-                          <span>Progress</span>
-                          <span className="text-indigo-400">Phase 1 Clear</span>
-                        </div>
+                      <div className="flex items-center gap-3">
+                         <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
+                         <span className="text-xs font-bold text-slate-200 tracking-tight">{skill}</span>
                       </div>
                     </div>
                   ))}
                 </div>
               )}
 
-              <div className="mt-10 space-y-4">
+              <div className="mt-8 pt-8 border-t border-white/5 space-y-4">
                 <button 
                   onClick={() => window.print()}
-                  className="w-full py-4 glass-card border-white/20 text-white rounded-2xl font-bold uppercase tracking-widest text-xs hover:bg-white/10 transition-all flex items-center justify-center gap-3"
+                  className="w-full py-4 bg-white/5 hover:bg-white/10 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all border border-white/10 flex items-center justify-center gap-3"
                 >
-                  <i className="fa-solid fa-file-pdf"></i>
-                  Generate PDF Roadmap
+                  <i className="fa-solid fa-key"></i>
+                  Export Access Token
                 </button>
-                <p className="text-[10px] text-center text-slate-500 font-bold uppercase tracking-tighter">
-                  Updated for 2026 Q1 Market Requirements
+                <p className="text-[9px] text-center text-slate-600 font-black uppercase tracking-widest">
+                  Valid for 2026 Q1 TechStack
                 </p>
               </div>
             </div>

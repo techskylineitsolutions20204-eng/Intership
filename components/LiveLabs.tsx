@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI, Type } from "@google/genai";
 
 interface LabInstance {
   id: string;
@@ -10,6 +10,8 @@ interface LabInstance {
   tools: string[];
   specs: string;
   icon: string;
+  latency?: string;
+  uptime?: string;
 }
 
 interface MentorMessage {
@@ -36,7 +38,9 @@ const LiveLabs: React.FC = () => {
       status: 'offline',
       tools: ['PyTorch', 'HuggingFace', 'LangChain', 'VectorDB'],
       specs: "80GB VRAM / 64GB RAM",
-      icon: "fa-brain"
+      icon: "fa-brain",
+      latency: "0ms",
+      uptime: "0%"
     },
     {
       id: 'fullstack-node',
@@ -45,7 +49,9 @@ const LiveLabs: React.FC = () => {
       status: 'offline',
       tools: ['Node.js', 'React 19', 'PostgreSQL', 'Redis'],
       specs: "4 vCPU / 8GB RAM",
-      icon: "fa-layer-group"
+      icon: "fa-layer-group",
+      latency: "0ms",
+      uptime: "0%"
     },
     {
       id: 'devsecops-pipeline',
@@ -54,7 +60,9 @@ const LiveLabs: React.FC = () => {
       status: 'offline',
       tools: ['Docker', 'Terraform', 'Jenkins', 'SonarQube'],
       specs: "Shared K8s Cluster",
-      icon: "fa-shield-halved"
+      icon: "fa-shield-halved",
+      latency: "0ms",
+      uptime: "0%"
     },
     {
       id: 'data-science-env',
@@ -63,7 +71,9 @@ const LiveLabs: React.FC = () => {
       status: 'offline',
       tools: ['Pandas', 'Spark', 'TensorFlow', 'Tableau SDK'],
       specs: "Memory Optimized Instance",
-      icon: "fa-chart-pie"
+      icon: "fa-chart-pie",
+      latency: "0ms",
+      uptime: "0%"
     }
   ]);
 
@@ -80,42 +90,91 @@ const LiveLabs: React.FC = () => {
   const [savedSessions, setSavedSessions] = useState<SavedSession[]>([]);
   const [showExitModal, setShowExitModal] = useState(false);
   const [isSummarizing, setIsSummarizing] = useState(false);
+  const [globalUptime, setGlobalUptime] = useState("99.98%");
   
   const terminalInputRef = useRef<HTMLInputElement>(null);
   const terminalEndRef = useRef<HTMLDivElement>(null);
   const notesRef = useRef<HTMLTextAreaElement>(null);
 
-  // Auto-scroll terminal
   useEffect(() => {
     terminalEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [terminalLogs]);
 
-  const fetchStatuses = useCallback(async () => {
+  // Real-time status fetcher via AI Simulation
+  const fetchRealTimeStatus = useCallback(async () => {
+    if (isSyncing) return;
     setIsSyncing(true);
+    
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const labIds = labs.map(l => l.id);
+    
+    const prompt = `You are a Cloud Infrastructure Health Monitor. Analyze the current state of these 4 lab instances: ${labIds.join(', ')}. 
+    Return a JSON object with "statuses" (an array) where each item has "id", "status" (online, offline, provisioning), "latency" (e.g., "14ms"), and "uptime" (e.g., "99.9%").
+    Be realistic: Mostly online, maybe 1 offline for maintenance. If a lab is provisioning, it stays provisioning for a few cycles.`;
+
     try {
-      await new Promise(resolve => setTimeout(resolve, 800));
-      setLabs(currentLabs => currentLabs.map(lab => {
-        if (activeLab?.id === lab.id || lab.status === 'provisioning') return lab;
-        const roll = Math.random();
-        let newStatus: LabInstance['status'] = 'offline';
-        if (roll > 0.95) newStatus = 'online';
-        else if (roll > 0.90) newStatus = 'provisioning';
-        return { ...lab, status: newStatus };
-      }));
+      const response = await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: prompt,
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              statuses: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    id: { type: Type.STRING },
+                    status: { type: Type.STRING },
+                    latency: { type: Type.STRING },
+                    uptime: { type: Type.STRING }
+                  },
+                  required: ["id", "status", "latency", "uptime"]
+                }
+              },
+              overallHealth: { type: Type.STRING }
+            },
+            required: ["statuses", "overallHealth"]
+          }
+        }
+      });
+
+      const data = JSON.parse(response.text || "{}");
+      
+      if (data.statuses) {
+        setLabs(currentLabs => currentLabs.map(lab => {
+          // Don't update the status of the lab the user is currently using
+          if (activeLab?.id === lab.id) return lab;
+          
+          const update = data.statuses.find((s: any) => s.id === lab.id);
+          if (update) {
+            return { 
+              ...lab, 
+              status: update.status as any,
+              latency: update.latency,
+              uptime: update.uptime
+            };
+          }
+          return lab;
+        }));
+        setGlobalUptime(data.overallHealth || "99.99%");
+      }
     } catch (error) {
-      console.error("Failed to sync lab statuses:", error);
+      console.error("Infrastructure Sync Error:", error);
     } finally {
       setIsSyncing(false);
     }
-  }, [activeLab]);
+  }, [activeLab, labs]);
 
   useEffect(() => {
-    fetchStatuses();
-    const interval = setInterval(fetchStatuses, 12000);
+    fetchRealTimeStatus();
+    const interval = setInterval(fetchRealTimeStatus, 30000); // Pulse every 30s
     const stored = localStorage.getItem('skyline_recorded_sessions');
     if (stored) setSavedSessions(JSON.parse(stored));
     return () => clearInterval(interval);
-  }, [fetchStatuses]);
+  }, []); // Only run on mount to start the cycle
 
   const startLab = (lab: LabInstance) => {
     setLabs(prev => prev.map(l => l.id === lab.id ? { ...l, status: 'provisioning' } : l));
@@ -184,13 +243,9 @@ const LiveLabs: React.FC = () => {
   };
 
   const closeLab = (save: boolean = false) => {
-    if (save) {
-      saveCurrentSession();
-    }
+    if (save) saveCurrentSession();
+    if (activeLab) setLabs(prev => prev.map(l => l.id === activeLab.id ? { ...l, status: 'offline' } : l));
     
-    if (activeLab) {
-      setLabs(prev => prev.map(l => l.id === activeLab.id ? { ...l, status: 'offline' } : l));
-    }
     setLabStatus('idle');
     setActiveLab(null);
     setTerminalLogs([]);
@@ -202,6 +257,8 @@ const LiveLabs: React.FC = () => {
     
     const stored = localStorage.getItem('skyline_recorded_sessions');
     if (stored) setSavedSessions(JSON.parse(stored));
+    // Immediately trigger a sync to update the grid
+    fetchRealTimeStatus();
   };
 
   const toggleRecording = () => {
@@ -246,7 +303,6 @@ const LiveLabs: React.FC = () => {
     setLabStatus('reviewing');
   };
 
-  // Note actions
   const addTimestamp = () => {
     const ts = `\n[${new Date().toLocaleTimeString()}] `;
     setSessionNotes(prev => prev + ts);
@@ -254,18 +310,14 @@ const LiveLabs: React.FC = () => {
   };
 
   const clearNotes = () => {
-    if (window.confirm("Clear all session notes?")) {
-      setSessionNotes("");
-    }
+    if (window.confirm("Clear all session notes?")) setSessionNotes("");
   };
 
   const generateAISummary = async () => {
     if (isSummarizing || terminalLogs.length < 5) return;
     setIsSummarizing(true);
-    
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const prompt = `Based on these terminal logs from a ${activeLab?.name} session, provide a 3-sentence technical summary of the activities and achievements for my session notes: \n\n${terminalLogs.slice(-20).join('\n')}`;
-
     try {
       const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
@@ -315,7 +367,6 @@ const LiveLabs: React.FC = () => {
   if (labStatus === 'active' && activeLab) {
     return (
       <div className="fixed inset-0 z-[100] bg-slate-950 flex flex-col animate-fade-in-up">
-        {/* Lab Header */}
         <div className="h-14 bg-slate-900 border-b border-white/5 flex items-center justify-between px-6">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
@@ -348,7 +399,6 @@ const LiveLabs: React.FC = () => {
           </div>
         </div>
 
-        {/* Termination Prompt Modal */}
         {showExitModal && (
           <div className="fixed inset-0 z-[110] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
             <div className="glass-card rounded-[2.5rem] max-w-md w-full p-10 border-white/10 shadow-2xl animate-fade-in-up">
@@ -357,26 +407,16 @@ const LiveLabs: React.FC = () => {
               </div>
               <h3 className="text-2xl font-black text-white text-center mb-4 uppercase tracking-tight">Terminate Session?</h3>
               <p className="text-slate-400 text-center mb-8 leading-relaxed">
-                Would you like to save your terminal logs and interactive notes to the Recording Hub before closing this instance?
+                Save your logs and interactive notes to the Recording Hub before closing this instance?
               </p>
               <div className="flex flex-col gap-3">
-                <button 
-                  onClick={() => closeLab(true)}
-                  className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-black uppercase tracking-widest text-xs transition-all shadow-lg shadow-indigo-600/20 flex items-center justify-center gap-2"
-                >
-                  <i className="fa-solid fa-cloud-arrow-up"></i>
-                  Save & Exit Session
+                <button onClick={() => closeLab(true)} className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-black uppercase tracking-widest text-xs transition-all shadow-lg flex items-center justify-center gap-2">
+                  <i className="fa-solid fa-cloud-arrow-up"></i> Save & Exit Session
                 </button>
-                <button 
-                  onClick={() => closeLab(false)}
-                  className="w-full py-4 bg-white/5 hover:bg-red-600 hover:text-white text-slate-400 rounded-xl font-black uppercase tracking-widest text-xs transition-all border border-white/5"
-                >
+                <button onClick={() => closeLab(false)} className="w-full py-4 bg-white/5 hover:bg-red-600 hover:text-white text-slate-400 rounded-xl font-black uppercase tracking-widest text-xs transition-all border border-white/5">
                   Exit Without Saving
                 </button>
-                <button 
-                  onClick={() => setShowExitModal(false)}
-                  className="w-full py-3 text-slate-600 hover:text-white transition-colors text-[10px] font-black uppercase tracking-widest"
-                >
+                <button onClick={() => setShowExitModal(false)} className="w-full py-3 text-slate-600 hover:text-white transition-colors text-[10px] font-black uppercase tracking-widest">
                   Continue Practicing
                 </button>
               </div>
@@ -384,11 +424,8 @@ const LiveLabs: React.FC = () => {
           </div>
         )}
 
-        {/* Content Wrapper */}
         <div className="flex-grow flex overflow-hidden">
-          {/* Interactive Mentor & Tasks Sidebar */}
           <div className="w-80 bg-slate-900 border-r border-white/5 flex flex-col hidden lg:flex">
-             {/* Live Mentor Feed */}
              <div className="flex-1 p-6 overflow-y-auto border-b border-white/5">
                 <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">Live Mentor Feedback</h3>
                 <div className="space-y-4">
@@ -404,112 +441,55 @@ const LiveLabs: React.FC = () => {
                 </div>
              </div>
 
-             {/* Live Session Notes */}
              <div className="h-80 bg-black/40 flex flex-col">
                 <div className="p-4 border-b border-white/5 flex items-center justify-between bg-slate-900/50">
                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Interactive Notes</h3>
                    <div className="flex gap-2">
-                      <button 
-                        onClick={addTimestamp}
-                        title="Add Timestamp"
-                        className="w-6 h-6 rounded bg-white/5 flex items-center justify-center text-[10px] text-slate-400 hover:text-white hover:bg-indigo-600 transition-all"
-                      >
+                      <button onClick={addTimestamp} title="Add Timestamp" className="w-6 h-6 rounded bg-white/5 flex items-center justify-center text-[10px] text-slate-400 hover:text-white hover:bg-indigo-600 transition-all">
                          <i className="fa-solid fa-clock"></i>
                       </button>
-                      <button 
-                        onClick={generateAISummary}
-                        title="AI Summarize Session"
-                        disabled={isSummarizing}
-                        className={`w-6 h-6 rounded bg-white/5 flex items-center justify-center text-[10px] transition-all ${isSummarizing ? 'text-indigo-400 animate-spin' : 'text-slate-400 hover:text-white hover:bg-indigo-600'}`}
-                      >
+                      <button onClick={generateAISummary} title="AI Summarize Session" disabled={isSummarizing} className={`w-6 h-6 rounded bg-white/5 flex items-center justify-center text-[10px] transition-all ${isSummarizing ? 'text-indigo-400 animate-spin' : 'text-slate-400 hover:text-white hover:bg-indigo-600'}`}>
                          <i className="fa-solid fa-wand-sparkles"></i>
                       </button>
-                      <button 
-                        onClick={clearNotes}
-                        title="Clear Notes"
-                        className="w-6 h-6 rounded bg-white/5 flex items-center justify-center text-[10px] text-slate-400 hover:text-red-500 hover:bg-red-500/10 transition-all"
-                      >
+                      <button onClick={clearNotes} title="Clear Notes" className="w-6 h-6 rounded bg-white/5 flex items-center justify-center text-[10px] text-slate-400 hover:text-red-500 hover:bg-red-500/10 transition-all">
                          <i className="fa-solid fa-trash-can"></i>
                       </button>
                    </div>
                 </div>
-                <textarea 
-                  ref={notesRef}
-                  className="flex-grow w-full bg-transparent border-none outline-none p-4 text-[11px] font-mono text-emerald-500/80 resize-none leading-relaxed placeholder:text-slate-700"
-                  value={sessionNotes}
-                  onChange={(e) => setSessionNotes(e.target.value)}
-                  placeholder="Draft your session insights here. Use AI tool for automatic summarization..."
-                />
+                <textarea ref={notesRef} className="flex-grow w-full bg-transparent border-none outline-none p-4 text-[11px] font-mono text-emerald-500/80 resize-none leading-relaxed placeholder:text-slate-700" value={sessionNotes} onChange={(e) => setSessionNotes(e.target.value)} placeholder="Draft your session insights here..." />
              </div>
           </div>
 
-          {/* Main IDE & Terminal Area */}
           <div className="flex-grow flex flex-col">
             <div className="flex-grow bg-[#1e1e1e] relative overflow-hidden">
-               {/* IDE Tab Header */}
                <div className="h-10 bg-[#252526] border-b border-white/5 flex items-center px-4">
                   <div className="bg-[#1e1e1e] px-4 h-full flex items-center gap-2 border-r border-white/5">
                      <i className="fa-brands fa-react text-blue-400 text-xs"></i>
                      <span className="text-[10px] text-slate-300 font-bold uppercase tracking-widest">SkylineApp.tsx</span>
                   </div>
                </div>
-               
-               {/* Editor Content */}
                <div className="p-8 font-mono text-xs leading-6 overflow-auto max-h-full">
-                  <div className="flex">
-                    <span className="w-8 text-slate-600 text-right pr-4 select-none">1</span>
-                    <span className="text-blue-400">import</span> <span className="text-indigo-300">React</span> <span className="text-blue-400">from</span> <span className="text-emerald-400">'react'</span>;
-                  </div>
-                  <div className="flex">
-                    <span className="w-8 text-slate-600 text-right pr-4 select-none">2</span>
-                    <span className="text-slate-500">// Real-time collaborative IDE enabled</span>
-                  </div>
-                  <div className="flex">
-                    <span className="w-8 text-slate-600 text-right pr-4 select-none">3</span>
-                    <span className="text-purple-400">const</span> <span className="text-yellow-300">InteractiveSession</span> = () =&gt; &#123;
-                  </div>
-                  <div className="flex">
-                    <span className="w-8 text-slate-600 text-right pr-4 select-none">4</span>
-                    &nbsp;&nbsp;<span className="text-blue-400">return</span> (
-                  </div>
-                  <div className="flex">
-                    <span className="w-8 text-slate-600 text-right pr-4 select-none">5</span>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&lt;<span className="text-red-400">div</span> <span className="text-amber-300">className</span>=<span className="text-emerald-400">"practice-mode"</span>&gt;
-                  </div>
-                  <div className="flex">
-                    <span className="w-8 text-slate-600 text-right pr-4 select-none">6</span>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span className="text-slate-200">Session ID: {activeLab.id}</span>
-                  </div>
-                  <div className="flex">
-                    <span className="w-8 text-slate-600 text-right pr-4 select-none">7</span>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&lt;/<span className="text-red-400">div</span>&gt;
-                  </div>
-                  <div className="flex">
-                    <span className="w-8 text-slate-600 text-right pr-4 select-none">8</span>
-                    &nbsp;&nbsp;);
-                  </div>
-                  <div className="flex">
-                    <span className="w-8 text-slate-600 text-right pr-4 select-none">9</span>
-                    &#125;;
-                  </div>
+                  <div className="flex"><span className="w-8 text-slate-600 text-right pr-4 select-none">1</span><span className="text-blue-400">import</span> <span className="text-indigo-300">React</span> <span className="text-blue-400">from</span> <span className="text-emerald-400">'react'</span>;</div>
+                  <div className="flex"><span className="w-8 text-slate-600 text-right pr-4 select-none">2</span><span className="text-slate-500">// Real-time collaborative IDE enabled</span></div>
+                  <div className="flex"><span className="w-8 text-slate-600 text-right pr-4 select-none">3</span><span className="text-purple-400">const</span> <span className="text-yellow-300">InteractiveSession</span> = () =&gt; &#123;</div>
+                  <div className="flex"><span className="w-8 text-slate-600 text-right pr-4 select-none">4</span>&nbsp;&nbsp;<span className="text-blue-400">return</span> (</div>
+                  <div className="flex"><span className="w-8 text-slate-600 text-right pr-4 select-none">5</span>&nbsp;&nbsp;&nbsp;&nbsp;&lt;<span className="text-red-400">div</span> <span className="text-amber-300">className</span>=<span className="text-emerald-400">"practice-mode"</span>&gt;</div>
+                  <div className="flex"><span className="w-8 text-slate-600 text-right pr-4 select-none">6</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span className="text-slate-200">Session ID: {activeLab.id}</span></div>
+                  <div className="flex"><span className="w-8 text-slate-600 text-right pr-4 select-none">7</span>&nbsp;&nbsp;&nbsp;&nbsp;&lt;/<span className="text-red-400">div</span>&gt;</div>
+                  <div className="flex"><span className="w-8 text-slate-600 text-right pr-4 select-none">8</span>&nbsp;&nbsp;);</div>
+                  <div className="flex"><span className="w-8 text-slate-600 text-right pr-4 select-none">9</span>&#125;;</div>
                </div>
             </div>
 
-            {/* Interactive Terminal */}
             <div className="h-72 bg-black border-t border-white/10 flex flex-col">
                <div className="h-8 bg-slate-900 border-b border-white/10 flex items-center justify-between px-4">
                   <div className="flex items-center gap-3">
                     <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Skyline Interactive Shell v2026</span>
                     {isRecording && (
                       <div className="flex items-center gap-1.5 px-2 py-0.5 bg-red-500/10 rounded text-[8px] font-black text-red-500 uppercase tracking-widest animate-pulse">
-                        <span className="w-1 h-1 bg-red-500 rounded-full"></span>
-                        Recording Active
+                        <span className="w-1 h-1 bg-red-500 rounded-full"></span> Recording Active
                       </div>
                     )}
-                  </div>
-                  <div className="flex gap-2">
-                    <div className="w-2.5 h-2.5 rounded-full bg-slate-800"></div>
-                    <div className="w-2.5 h-2.5 rounded-full bg-slate-800"></div>
                   </div>
                </div>
                <div className="flex-grow p-4 font-mono text-[11px] overflow-y-auto space-y-1">
@@ -520,11 +500,7 @@ const LiveLabs: React.FC = () => {
                   ))}
                   <form onSubmit={handleTerminalCommand} className="flex items-center">
                     <span className="text-emerald-500 font-bold mr-2">root@skyline:~#</span>
-                    <input 
-                      ref={terminalInputRef}
-                      className="bg-transparent border-none outline-none text-white w-full" 
-                      autoFocus 
-                    />
+                    <input ref={terminalInputRef} className="bg-transparent border-none outline-none text-white w-full" autoFocus />
                   </form>
                   <div ref={terminalEndRef} />
                </div>
@@ -546,17 +522,13 @@ const LiveLabs: React.FC = () => {
              <h2 className="text-3xl font-black text-white mb-2">Booting Environment</h2>
              <p className="text-slate-500">Provisioning your dedicated {activeLab.name}...</p>
            </div>
-
            <div className="space-y-4">
               <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">
                 <span>Instance Health Check</span>
                 <span className="text-indigo-400">{bootProgress}%</span>
               </div>
               <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-indigo-500 transition-all duration-300" 
-                  style={{ width: `${bootProgress}%` }}
-                ></div>
+                <div className="h-full bg-indigo-500 transition-all duration-300" style={{ width: `${bootProgress}%` }}></div>
               </div>
            </div>
         </div>
@@ -575,33 +547,60 @@ const LiveLabs: React.FC = () => {
             </div>
             <h2 className="text-5xl font-black text-white mb-6 tracking-tight">Interactive <span className="text-blue-500">Practice Mode</span></h2>
             <p className="text-xl text-slate-400 max-w-3xl leading-relaxed">
-              Launch dedicated lab instances for hands-on technical sessions. Every lab includes an interactive terminal, live mentor guidance, and real-time collaboration tools.
+              Launch dedicated lab instances for hands-on technical sessions. Status is updated in real-time via our AI-driven Infrastructure Monitor.
             </p>
           </div>
-          <div className="flex items-center gap-3 glass-card px-6 py-3 rounded-2xl border-white/5">
-            <span className={`w-2 h-2 rounded-full ${isSyncing ? 'bg-indigo-500 animate-pulse' : 'bg-emerald-500'}`}></span>
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-              {isSyncing ? 'Syncing Infrastructure Status...' : 'Real-time Health: Operational'}
-            </span>
+          
+          {/* Infrastructure Health Dashboard */}
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center gap-6 glass-card px-8 py-4 rounded-3xl border-white/5 shadow-2xl">
+              <div className="flex flex-col">
+                <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Global Uptime</span>
+                <span className="text-lg font-black text-white">{globalUptime}</span>
+              </div>
+              <div className="w-px h-10 bg-white/10"></div>
+              <div className="flex flex-col">
+                <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Active Nodes</span>
+                <span className="text-lg font-black text-emerald-400">{labs.filter(l => l.status === 'online').length}</span>
+              </div>
+              <div className="w-px h-10 bg-white/10"></div>
+              <div className="flex items-center gap-3">
+                <span className={`w-2 h-2 rounded-full ${isSyncing ? 'bg-indigo-500 animate-pulse' : 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]'}`}></span>
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                  {isSyncing ? 'Syncing...' : 'Real-time'}
+                </span>
+              </div>
+            </div>
+            {isSyncing && (
+              <div className="text-[9px] font-black text-indigo-400 uppercase tracking-widest text-right animate-pulse">
+                Fetching Infrastructure Heartbeat...
+              </div>
+            )}
           </div>
         </div>
 
         {/* Labs Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 mb-24">
           {labs.map((lab) => (
-            <div key={lab.id} className="glass-card rounded-[3rem] p-10 border-white/5 flex flex-col justify-between hover:border-indigo-500/30 transition-all group">
+            <div key={lab.id} className="glass-card rounded-[3rem] p-10 border-white/5 flex flex-col justify-between hover:border-indigo-500/30 transition-all group relative">
               <div>
                 <div className="flex justify-between items-start mb-8">
                   <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center text-2xl text-white border border-white/10 group-hover:border-indigo-500/50 group-hover:scale-105 transition-all">
                     <i className={`fa-solid ${lab.icon}`}></i>
                   </div>
-                  <span className={`px-3 py-1 bg-white/5 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-2 ${
-                    lab.status === 'online' ? 'text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.1)]' : 
-                    lab.status === 'provisioning' ? 'text-amber-400' : 'text-slate-400'
-                  }`}>
-                    <span className={`w-1.5 h-1.5 rounded-full ${lab.status === 'online' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : lab.status === 'provisioning' ? 'bg-amber-500 animate-pulse' : 'bg-slate-600'}`}></span>
-                    {lab.status === 'online' ? 'Active Pool' : lab.status === 'provisioning' ? 'Warming Up' : 'On Standby'}
-                  </span>
+                  <div className="flex flex-col items-end gap-2">
+                    <span className={`px-3 py-1 bg-white/5 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-2 ${
+                      lab.status === 'online' ? 'text-emerald-400' : 
+                      lab.status === 'provisioning' ? 'text-amber-400' : 'text-slate-400'
+                    }`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${lab.status === 'online' ? 'bg-emerald-500' : lab.status === 'provisioning' ? 'bg-amber-500 animate-pulse' : 'bg-slate-600'}`}></span>
+                      {lab.status === 'online' ? 'Operational' : lab.status === 'provisioning' ? 'Provisioning' : 'Maintenance'}
+                    </span>
+                    <div className="flex gap-3 mt-1">
+                       <span className="text-[8px] font-bold text-slate-600 uppercase tracking-widest">Lat: <span className="text-slate-400">{lab.latency}</span></span>
+                       <span className="text-[8px] font-bold text-slate-600 uppercase tracking-widest">Up: <span className="text-slate-400">{lab.uptime}</span></span>
+                    </div>
+                  </div>
                 </div>
                 
                 <h3 className="text-2xl font-black text-white mb-2">{lab.name}</h3>
@@ -618,11 +617,11 @@ const LiveLabs: React.FC = () => {
 
               <button 
                 onClick={() => startLab(lab)}
-                disabled={lab.status === 'provisioning'}
-                className="w-full py-5 bg-white hover:bg-indigo-600 text-slate-950 hover:text-white rounded-[2rem] font-black uppercase tracking-[0.3em] text-xs transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+                disabled={lab.status !== 'online'}
+                className="w-full py-5 bg-white hover:bg-indigo-600 text-slate-950 hover:text-white rounded-[2rem] font-black uppercase tracking-[0.3em] text-xs transition-all flex items-center justify-center gap-3 disabled:opacity-30 disabled:cursor-not-allowed"
               >
-                Launch Practice Node
-                <i className="fa-solid fa-play text-[10px]"></i>
+                {lab.status === 'online' ? 'Launch Node' : lab.status === 'provisioning' ? 'Booting...' : 'Maintenance'}
+                {lab.status === 'online' && <i className="fa-solid fa-play text-[10px]"></i>}
               </button>
             </div>
           ))}
