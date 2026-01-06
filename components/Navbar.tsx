@@ -10,6 +10,8 @@ const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
   const [showTrainings, setShowTrainings] = useState(false);
 
   const PARTNERS = [
+    { name: 'Gen AI Foundations', url: 'https://cloud.google.com/learn/training/machinelearning-ai?utm_source=chatgpt.com#generative-ai-courses-by-level' },
+    { name: 'Agentic AI Workflows', url: 'https://www.deeplearning.ai/short-courses/ai-agentic-workflows-with-crewai/' },
     { name: 'Google Cloud ML', url: 'https://cloud.google.com/learn/training/machinelearning-ai?utm_source=chatgpt.com#get-certified-machine-learning' },
     { name: 'DeepLearning.AI', url: 'https://www.deeplearning.ai/short-courses/chatgpt-prompt-engineering-for-developers/' },
     { name: 'Kaggle Learn', url: 'https://www.kaggle.com/learn/intro-to-machine-learning' },
@@ -67,7 +69,7 @@ const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
                {showTrainings && (
                  <div 
                    onMouseLeave={() => setShowTrainings(false)}
-                   className="absolute top-full right-0 mt-2 w-64 bg-slate-900 border border-white/10 rounded-2xl p-4 shadow-2xl shadow-black/50 animate-fade-in-up"
+                   className="absolute top-full right-0 mt-2 w-72 bg-slate-900 border border-white/10 rounded-2xl p-4 shadow-2xl shadow-black/50 animate-fade-in-up"
                  >
                     <div className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-4 px-2">Official Partner Nodes</div>
                     <div className="space-y-1">

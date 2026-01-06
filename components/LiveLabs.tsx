@@ -18,6 +18,14 @@ interface MentorMessage {
   timestamp: string;
 }
 
+interface SavedSession {
+  id: string;
+  labName: string;
+  timestamp: string;
+  logs: string[];
+  notes: string;
+}
+
 const LiveLabs: React.FC = () => {
   const [labs, setLabs] = useState<LabInstance[]>([
     {
@@ -64,6 +72,8 @@ const LiveLabs: React.FC = () => {
   const [bootProgress, setBootProgress] = useState(0);
   const [mentorMessages, setMentorMessages] = useState<MentorMessage[]>([]);
   const [sessionNotes, setSessionNotes] = useState<string>("Initializing session notes...");
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingStatus, setRecordingStatus] = useState<'idle' | 'recording' | 'saved'>('idle');
   const terminalInputRef = useRef<HTMLInputElement>(null);
 
   const fetchStatuses = useCallback(async () => {
@@ -90,6 +100,7 @@ const LiveLabs: React.FC = () => {
     setActiveLab(lab);
     setLabStatus('loading');
     setBootProgress(0);
+    setRecordingStatus('idle');
     setTerminalLogs([
       `[AUTH] Authenticating session for TechSkyline Node...`,
       `[PROVISION] Requesting ${lab.type} resource...`,
@@ -104,7 +115,6 @@ const LiveLabs: React.FC = () => {
           setLabs(currentLabs => currentLabs.map(l => l.id === lab.id ? { ...l, status: 'online' } : l));
           setTerminalLogs(logs => [...logs, `[SYSTEM] Instance [${lab.id}] is now ONLINE.`, `Welcome to TechSkyline Cloud Shell. Practice session started.`]);
           
-          // Trigger initial mentor message
           setTimeout(() => {
             setMentorMessages([
               { 
@@ -142,6 +152,31 @@ const LiveLabs: React.FC = () => {
     setTerminalLogs([]);
     setMentorMessages([]);
     setSessionNotes("");
+    setIsRecording(false);
+  };
+
+  const toggleRecording = () => {
+    if (isRecording) {
+      // Stopping recording - Save to local storage
+      const sessionData: SavedSession = {
+        id: `session_${Date.now()}`,
+        labName: activeLab?.name || 'Unknown Lab',
+        timestamp: new Date().toISOString(),
+        logs: terminalLogs,
+        notes: sessionNotes
+      };
+      
+      const existingSessionsStr = localStorage.getItem('skyline_recorded_sessions');
+      const existingSessions = existingSessionsStr ? JSON.parse(existingSessionsStr) : [];
+      localStorage.setItem('skyline_recorded_sessions', JSON.stringify([...existingSessions, sessionData]));
+      
+      setIsRecording(false);
+      setRecordingStatus('saved');
+      setTimeout(() => setRecordingStatus('idle'), 3000);
+    } else {
+      setIsRecording(true);
+      setRecordingStatus('recording');
+    }
   };
 
   const handleTerminalCommand = (e: React.FormEvent<HTMLFormElement>) => {
@@ -153,7 +188,6 @@ const LiveLabs: React.FC = () => {
     setTerminalLogs(prev => [...prev, `root@skyline:~# ${cmd}`]);
     terminalInputRef.current.value = '';
 
-    // Simulate "interactive" responses
     setTimeout(() => {
       let response = `Command '${cmd}' executed successfully.`;
       if (cmd === 'ls') response = `bin/  etc/  projects/  scripts/  var/`;
@@ -161,7 +195,6 @@ const LiveLabs: React.FC = () => {
       
       setTerminalLogs(prev => [...prev, response]);
 
-      // Mentor interaction based on command
       if (cmd.includes('npm') || cmd.includes('python')) {
         setMentorMessages(prev => [
           ...prev, 
@@ -182,7 +215,22 @@ const LiveLabs: React.FC = () => {
               <span className="text-xs font-black uppercase tracking-widest text-white">{activeLab.name} - INTERACTIVE MODE</span>
             </div>
           </div>
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-3">
+             <button 
+               onClick={toggleRecording}
+               className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 border shadow-lg ${
+                 isRecording 
+                   ? 'bg-red-600/10 border-red-500/50 text-red-500 hover:bg-red-600/20' 
+                   : recordingStatus === 'saved'
+                   ? 'bg-emerald-600/10 border-emerald-500/50 text-emerald-500'
+                   : 'bg-white/5 border-white/10 text-slate-400 hover:text-white hover:bg-white/10'
+               }`}
+             >
+               {isRecording && <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></span>}
+               <i className={`fa-solid ${recordingStatus === 'saved' ? 'fa-check' : 'fa-record-vinyl'}`}></i>
+               {isRecording ? 'Stop Recording' : recordingStatus === 'saved' ? 'Saved to Hub' : 'Record Session'}
+             </button>
+             <div className="h-6 w-px bg-white/10 mx-1"></div>
              <button 
                onClick={closeLab}
                className="px-4 py-1.5 bg-red-600 hover:bg-red-700 text-white text-[10px] font-black uppercase tracking-widest rounded-lg transition-all"
@@ -222,6 +270,7 @@ const LiveLabs: React.FC = () => {
                   className="w-full h-full bg-transparent border-none outline-none text-[11px] font-mono text-emerald-500/80 resize-none leading-relaxed"
                   value={sessionNotes}
                   onChange={(e) => setSessionNotes(e.target.value)}
+                  placeholder="Draft your session insights here..."
                 />
              </div>
           </div>
@@ -281,7 +330,15 @@ const LiveLabs: React.FC = () => {
             {/* Interactive Terminal */}
             <div className="h-72 bg-black border-t border-white/10 flex flex-col">
                <div className="h-8 bg-slate-900 border-b border-white/10 flex items-center justify-between px-4">
-                  <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Skyline Interactive Shell v2026</span>
+                  <div className="flex items-center gap-3">
+                    <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Skyline Interactive Shell v2026</span>
+                    {isRecording && (
+                      <div className="flex items-center gap-1.5 px-2 py-0.5 bg-red-500/10 rounded text-[8px] font-black text-red-500 uppercase tracking-widest animate-pulse">
+                        <span className="w-1 h-1 bg-red-500 rounded-full"></span>
+                        Recording Active
+                      </div>
+                    )}
+                  </div>
                   <div className="flex gap-2">
                     <div className="w-2.5 h-2.5 rounded-full bg-slate-800"></div>
                     <div className="w-2.5 h-2.5 rounded-full bg-slate-800"></div>
@@ -304,6 +361,35 @@ const LiveLabs: React.FC = () => {
                </div>
             </div>
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (labStatus === 'loading' && activeLab) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-8 animate-fade-in-up">
+        <div className="w-full max-w-md">
+           <div className="mb-12 text-center">
+             <div className="w-20 h-20 bg-indigo-600/20 rounded-3xl flex items-center justify-center mx-auto mb-6 border border-indigo-500/30">
+                <i className={`fa-solid ${activeLab.icon} text-3xl text-indigo-400`}></i>
+             </div>
+             <h2 className="text-3xl font-black text-white mb-2">Booting Environment</h2>
+             <p className="text-slate-500">Provisioning your dedicated {activeLab.name}...</p>
+           </div>
+
+           <div className="space-y-4">
+              <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">
+                <span>Instance Health Check</span>
+                <span className="text-indigo-400">{bootProgress}%</span>
+              </div>
+              <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-indigo-500 transition-all duration-300" 
+                  style={{ width: `${bootProgress}%` }}
+                ></div>
+              </div>
+           </div>
         </div>
       </div>
     );
