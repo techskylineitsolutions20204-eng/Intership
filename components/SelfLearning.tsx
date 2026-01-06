@@ -6,146 +6,156 @@ interface Module {
   title: string;
   category: string;
   duration: string;
-  embedId: string; // Using YouTube embed IDs as placeholders for real recordings
+  embedId: string; 
+  recordedAt: string;
+  instructor: string;
   labUrl: string;
   description: string;
   tasks: string[];
+  externalUrl?: string;
+  platformColor?: string;
+  icon?: string;
 }
 
 const SelfLearning: React.FC = () => {
   const [selectedModule, setSelectedModule] = useState<Module | null>(null);
+  
+  const PARTNER_LINKS = {
+    UXCEL: "https://app.uxcel.com/courses/ai-fundamentals-for-ux?_gl=1*1don438*_gcl_au*ODU5OTA0NTg5LjE3Njc2ODQ2ODk.",
+    GOOGLE_ML: "https://developers.google.com/machine-learning/crash-course",
+    DEEPLEARNING_AI: "https://www.deeplearning.ai/short-courses/chatgpt-prompt-engineering-for-developers/",
+    KAGGLE: "https://www.kaggle.com/learn/intro-to-machine-learning",
+    UDACITY: "https://www.udacity.com/course/aws-machine-learning-foundations--ud065",
+    GCP_GENAI: "https://cloud.google.com/learn/training/machinelearning-ai?utm_source=chatgpt.com#generative-ai-courses-by-level",
+    GCP_ML_ENG: "https://cloud.google.com/learn/training/machinelearning-ai?utm_source=chatgpt.com#hands-on-courses-ml-engineers",
+    GCP_WORKFLOW: "https://cloud.google.com/learn/training/machinelearning-ai?utm_source=chatgpt.com#generative-ai-workflow",
+    GCP_CERT: "https://cloud.google.com/learn/training/machinelearning-ai?utm_source=chatgpt.com#get-certified-machine-learning"
+  };
 
   const modules: Module[] = [
     {
-      id: 'ai-ds-mastery',
-      title: "AI & Data Science Deep Dive",
-      category: "Data Science",
-      duration: "120 mins",
-      embedId: "dQw4w9WgXcQ", // Placeholder
-      labUrl: "#",
-      description: "Master the pipeline from raw data to predictive modeling using Scikit-Learn and Pandas.",
-      tasks: ["Data Cleaning Workflows", "Feature Engineering", "Model Evaluation Metrics"]
+      id: 'gcp-genai-mastery',
+      title: "Google Cloud: GenAI Path",
+      category: "Elite Certification",
+      duration: "Multi-level",
+      embedId: "",
+      recordedAt: "GCP Official",
+      instructor: "Google Cloud",
+      labUrl: PARTNER_LINKS.GCP_GENAI,
+      description: "Master Generative AI from foundational concepts to advanced enterprise deployment strategies on Google Cloud Platform.",
+      tasks: ["Large Language Models", "Image Generation", "Attention Mechanisms"],
+      externalUrl: PARTNER_LINKS.GCP_GENAI,
+      platformColor: "blue",
+      icon: "fa-cloud"
+    },
+    {
+      id: 'deeplearning-prompt',
+      title: "ChatGPT Prompt Engineering",
+      category: "Specialist Track",
+      duration: "Short Course",
+      embedId: "",
+      recordedAt: "Partner Track",
+      instructor: "Andrew Ng / OpenAI",
+      labUrl: PARTNER_LINKS.DEEPLEARNING_AI,
+      description: "Learn how to use a large language model (LLM) to quickly build new and powerful applications. Taught by AI visionary Andrew Ng.",
+      tasks: ["Prompting Best Practices", "Iterative Prompting", "Summarizing & Inferring"],
+      externalUrl: PARTNER_LINKS.DEEPLEARNING_AI,
+      platformColor: "indigo",
+      icon: "fa-brain-circuit"
+    },
+    {
+      id: 'udacity-aws-ml',
+      title: "AWS ML Foundations",
+      category: "Cloud Mastery",
+      duration: "Self-Paced",
+      embedId: "",
+      recordedAt: "Udacity Partner",
+      instructor: "AWS Training Team",
+      labUrl: PARTNER_LINKS.UDACITY,
+      description: "Foundational course on Machine Learning using Amazon Web Services. Covers SageMaker and core AWS ML services.",
+      tasks: ["AWS SageMaker", "Model Deployment", "ML Case Studies"],
+      externalUrl: PARTNER_LINKS.UDACITY,
+      platformColor: "orange",
+      icon: "fa-aws"
+    },
+    {
+      id: 'kaggle-ml-intro',
+      title: "Intro to Machine Learning",
+      category: "Data Track",
+      duration: "3 Hours",
+      embedId: "",
+      recordedAt: "Hands-on",
+      instructor: "Kaggle Learn",
+      labUrl: PARTNER_LINKS.KAGGLE,
+      description: "Learn the core ideas in machine learning, and build your first models using real-world data science tools.",
+      tasks: ["Model Validation", "Underfitting & Overfitting", "Random Forests"],
+      externalUrl: PARTNER_LINKS.KAGGLE,
+      platformColor: "sky",
+      icon: "fa-chart-line"
+    },
+    {
+      id: 'gcp-ml-cert',
+      title: "GCP Professional ML Engineer",
+      category: "Professional Cert",
+      duration: "Intensive",
+      embedId: "",
+      recordedAt: "Official Prep",
+      instructor: "Google Training",
+      labUrl: PARTNER_LINKS.GCP_CERT,
+      description: "Official preparation path for the Google Cloud Professional Machine Learning Engineer certification.",
+      tasks: ["ML Pipeline Orchestration", "Feature Engineering at Scale", "Model Monitoring"],
+      externalUrl: PARTNER_LINKS.GCP_CERT,
+      platformColor: "red",
+      icon: "fa-certificate"
     },
     {
       id: 'gen-ai-2026',
       title: "Generative AI & LLM Architectures",
-      category: "GenAI",
+      category: "Skyline Original",
       duration: "90 mins",
-      embedId: "dQw4w9WgXcQ",
+      embedId: "5sLYA48vW3U",
+      recordedAt: "Nov 05, 2025",
+      instructor: "Abhinav Joseph",
       labUrl: "#",
-      description: "Building production-grade RAG systems and fine-tuning models for specific domain knowledge.",
+      description: "Class recording on building production-grade RAG systems and fine-tuning models for specific domain knowledge.",
       tasks: ["Vector DB Integration", "Context Window Management", "Fine-tuning v/s RAG"]
-    },
-    {
-      id: 'agentic-systems',
-      title: "Agentic AI: Autonomous Workflows",
-      category: "Agentic AI",
-      duration: "75 mins",
-      embedId: "dQw4w9WgXcQ",
-      labUrl: "#",
-      description: "Creating self-correcting AI agents that can use tools and execute multi-step business logic.",
-      tasks: ["Tool Definition for LLMs", "Multi-Agent Orchestration", "Error Handling in Agents"]
-    },
-    {
-      id: 'cyber-iam',
-      title: "Cybersecurity & Identity Access",
-      category: "Cybersecurity",
-      duration: "110 mins",
-      embedId: "dQw4w9WgXcQ",
-      labUrl: "#",
-      description: "Securing modern enterprise apps with Zero Trust, IAM (SailPoint/Okta), and penetration testing.",
-      tasks: ["OAuth2 Flow Setup", "Threat Modeling", "IAM Policy Logic"]
-    },
-    {
-      id: 'fullstack-modern',
-      title: "Full Stack Mastery (React 19 & Node)",
-      category: "Full Stack",
-      duration: "150 mins",
-      embedId: "dQw4w9WgXcQ",
-      labUrl: "#",
-      description: "End-to-end development using the latest React features and high-performance Node.js backends.",
-      tasks: ["Server Components", "State Management v2026", "API Layer Security"]
-    },
-    {
-      id: 'python-advanced',
-      title: "Python for Senior Engineers",
-      category: "Python",
-      duration: "85 mins",
-      embedId: "dQw4w9WgXcQ",
-      labUrl: "#",
-      description: "Advanced decorators, generators, and async/await patterns for high-concurrency systems.",
-      tasks: ["AsyncIO Design Patterns", "Memory Optimization", "Python C-Extensions"]
-    },
-    {
-      id: 'azure-devops-cicd',
-      title: "Azure DevOps & Cloud Infrastructure",
-      category: "Azure DevOps",
-      duration: "95 mins",
-      embedId: "dQw4w9WgXcQ",
-      labUrl: "#",
-      description: "Automating the cloud lifecycle with Azure Pipelines, Terraform, and Kubernetes orchestration.",
-      tasks: ["Infrastructure as Code", "Blue-Green Deployment", "Log Analytics Setup"]
-    },
-    {
-      id: 'iot-edge-compute',
-      title: "IoT Edge & Embedded Systems",
-      category: "IoT",
-      duration: "70 mins",
-      embedId: "dQw4w9WgXcQ",
-      labUrl: "#",
-      description: "Connecting the physical world to the cloud with edge computing and MQTT messaging protocols.",
-      tasks: ["Edge Data Filtering", "Device Management", "Real-time Telemetry"]
-    },
-    {
-      id: 'rpa-uipath-pro',
-      title: "RPA: Enterprise Process Automation",
-      category: "RPA",
-      duration: "65 mins",
-      embedId: "dQw4w9WgXcQ",
-      labUrl: "#",
-      description: "Automating repetitive corporate workflows using UiPath and intelligent document processing.",
-      tasks: ["UI Path Orchestrator", "Document Understanding", "Unattended Bot Logic"]
-    },
-    {
-      id: 'blockchain-web3',
-      title: "Blockchain & Decentralized Apps",
-      category: "Blockchain",
-      duration: "100 mins",
-      embedId: "dQw4w9WgXcQ",
-      labUrl: "#",
-      description: "Smart contract development and Web3 integration for transparent, decentralized systems.",
-      tasks: ["Solidity Smart Contracts", "Wallet Integrations", "Gas Optimization"]
-    },
-    {
-      id: 'powerbi-intelligence',
-      title: "Power BI & Business Intelligence",
-      category: "Power BI",
-      duration: "80 mins",
-      embedId: "dQw4w9WgXcQ",
-      labUrl: "#",
-      description: "Transforming complex datasets into actionable executive dashboards with DAX and Power Query.",
-      tasks: ["DAX Measure Logic", "Data Modeling", "Row-Level Security"]
     }
   ];
 
   return (
     <section className="py-24 bg-slate-950">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-16">
-          <div className="inline-flex items-center px-4 py-2 glass-card text-blue-400 rounded-full text-xs font-black uppercase tracking-widest mb-6">
-            <i className="fa-solid fa-graduation-cap mr-2"></i>
-            Self-Paced Mastery Hub
+        <div className="mb-16 flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+          <div>
+            <div className="inline-flex items-center px-4 py-2 glass-card text-blue-400 rounded-full text-xs font-black uppercase tracking-widest mb-6">
+              <i className="fa-solid fa-graduation-cap mr-2"></i>
+              TechSkyline Academy Hub
+            </div>
+            <h2 className="text-5xl font-black text-white mb-6">Multi-Platform <span className="text-blue-500">Learning</span></h2>
+            <p className="text-xl text-slate-400 max-w-2xl leading-relaxed">
+              We've integrated the world's leading AI & ML curricula from Google, DeepLearning.AI, Udacity, and Kaggle into a unified mastery track.
+            </p>
           </div>
-          <h2 className="text-5xl font-black text-white mb-6">AI Academy: <span className="text-blue-500">2026 Edition</span></h2>
-          <p className="text-xl text-slate-400 max-w-3xl leading-relaxed">
-            Access high-definition recordings of previous TechSkyline bootcamps, synchronized with live GPU labs and hands-on practice environments.
-          </p>
+          
+          <div className="flex flex-wrap gap-3">
+             {Object.entries({
+               'Google': 'fa-google',
+               'AWS': 'fa-aws',
+               'OpenAI': 'fa-bolt',
+               'Kaggle': 'fa-database'
+             }).map(([name, icon]) => (
+               <div key={name} className="px-4 py-2 glass-card border-white/5 rounded-xl flex items-center gap-2">
+                 <i className={`fa-brands ${icon} text-blue-400 text-xs`}></i>
+                 <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{name} Partner</span>
+               </div>
+             ))}
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Module Selection Sidebar */}
+          {/* Sidebar */}
           <div className="lg:col-span-1 space-y-4 max-h-[800px] overflow-y-auto pr-4 scrollbar-hide">
-            <h3 className="text-sm font-black text-slate-500 uppercase tracking-widest mb-4 px-2">Knowledge Domains</h3>
+            <h3 className="text-sm font-black text-slate-500 uppercase tracking-widest mb-4 px-2">Select Academy Track</h3>
             {modules.map((mod) => (
               <button
                 key={mod.id}
@@ -173,113 +183,117 @@ const SelfLearning: React.FC = () => {
                 }`}>
                   {mod.title}
                 </h4>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center justify-between">
+                  <span className={`text-[10px] font-bold ${
+                    selectedModule?.id === mod.id ? 'text-blue-100' : 'text-slate-500'
+                  }`}>
+                    By: {mod.instructor}
+                  </span>
                   <span className={`text-xs flex items-center gap-1 ${
                     selectedModule?.id === mod.id ? 'text-blue-100' : 'text-emerald-500 font-bold'
                   }`}>
-                    <i className="fa-solid fa-circle-play"></i> Watch Now
+                    <i className={`fa-solid ${mod.externalUrl ? 'fa-arrow-up-right-from-square' : 'fa-lock-open'} mr-1`}></i>
+                    {mod.externalUrl ? 'Platform' : 'Access'}
                   </span>
                 </div>
               </button>
             ))}
           </div>
 
-          {/* Practice Console */}
+          {/* Module Content */}
           <div className="lg:col-span-2">
             {!selectedModule ? (
               <div className="h-full min-h-[500px] glass-card rounded-[3rem] border-dashed border-white/10 flex flex-col items-center justify-center text-center p-12">
                 <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mb-6 text-slate-600">
-                  <i className="fa-solid fa-play text-3xl"></i>
+                  <i className="fa-solid fa-graduation-cap text-3xl"></i>
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-4">Select a domain to begin</h3>
-                <p className="text-slate-500 max-w-sm">Every module features industry recordings, cloud-sync labs, and task-based evaluation.</p>
+                <h3 className="text-2xl font-bold text-white mb-4">Start Your Specialization</h3>
+                <p className="text-slate-500 max-w-sm">Choose between TechSkyline originals or our certified partner tracks from global tech leaders.</p>
               </div>
             ) : (
-              <div className="space-y-8 animate-fade-in-up">
-                {/* Integrated Video Player */}
-                <div className="glass-card rounded-[2.5rem] overflow-hidden shadow-2xl relative">
-                   <div className="aspect-video w-full bg-black">
-                      <iframe 
-                        className="w-full h-full"
-                        src={`https://www.youtube.com/embed/${selectedModule.embedId}?autoplay=0&controls=1&modestbranding=1&rel=0`}
-                        title={selectedModule.title}
-                        frameBorder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                      ></iframe>
-                   </div>
-                   <div className="p-6 bg-slate-900 border-t border-white/5 flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
-                        <span className="text-xs font-bold text-white uppercase tracking-widest">Recording: {selectedModule.title}</span>
-                      </div>
-                      <div className="flex gap-4">
-                        <button className="text-slate-400 hover:text-white transition-colors"><i className="fa-solid fa-closed-captioning"></i></button>
-                        <button className="text-slate-400 hover:text-white transition-colors"><i className="fa-solid fa-gear"></i></button>
-                      </div>
-                   </div>
-                </div>
-
-                {/* Lab & Task Controls */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div className="glass-card rounded-[2rem] p-8 border-emerald-500/20">
-                    <div className="flex items-center justify-between mb-6">
-                      <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                        <i className="fa-solid fa-terminal text-emerald-500"></i>
-                        Interactive Lab
-                      </h3>
-                      <span className="flex items-center gap-2 text-[10px] font-black uppercase text-emerald-400 tracking-widest">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                        Sync Ready
-                      </span>
+              <div className="animate-fade-in-up">
+                {selectedModule.externalUrl ? (
+                  <div className={`glass-card rounded-[3rem] p-12 lg:p-20 text-center flex flex-col items-center border-indigo-500/30 bg-gradient-to-br from-indigo-950/20 to-blue-950/20`}>
+                    <div className={`w-24 h-24 bg-blue-600 text-white rounded-3xl flex items-center justify-center mb-8 shadow-2xl shadow-blue-600/30`}>
+                      <i className={`fa-solid ${selectedModule.icon || 'fa-rocket'} text-4xl`}></i>
                     </div>
-                    <p className="text-slate-400 text-sm mb-6 leading-relaxed">
+                    <span className="text-xs font-black text-blue-400 uppercase tracking-widest mb-4">Official Training Node</span>
+                    <h3 className="text-4xl font-black text-white mb-6 leading-tight">{selectedModule.title}</h3>
+                    <p className="text-xl text-slate-400 mb-12 max-w-xl leading-relaxed">
                       {selectedModule.description}
                     </p>
-                    <button className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-black uppercase tracking-widest text-xs transition-all shadow-lg shadow-emerald-500/20">
-                      Launch Practice Cloud
-                    </button>
-                  </div>
-
-                  <div className="glass-card rounded-[2rem] p-8 border-blue-500/20">
-                    <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                      <i className="fa-solid fa-list-check text-blue-500"></i>
-                      Learning Milestones
-                    </h3>
-                    <div className="space-y-3">
-                      {selectedModule.tasks.map((task, i) => (
-                        <div key={i} className="flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/5 group hover:border-blue-500/30 transition-all cursor-pointer">
-                          <div className="w-5 h-5 rounded border border-slate-600 group-hover:border-blue-500 flex items-center justify-center text-[10px] text-transparent group-hover:text-blue-500">
-                            <i className="fa-solid fa-check"></i>
-                          </div>
-                          <span className="text-sm text-slate-300 font-medium">{task}</span>
-                        </div>
-                      ))}
+                    <a 
+                      href={selectedModule.externalUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-12 py-5 bg-white text-slate-950 rounded-2xl font-black uppercase tracking-[0.3em] text-sm hover:bg-slate-100 transition-all shadow-2xl shadow-white/10 flex items-center gap-4"
+                    >
+                      Enter Partner Platform
+                      <i className="fa-solid fa-arrow-up-right-from-square"></i>
+                    </a>
+                    <div className="mt-12 flex flex-wrap justify-center gap-4 opacity-60">
+                       {selectedModule.tasks.map((t, i) => (
+                         <span key={i} className="px-4 py-2 bg-white/5 border border-white/5 rounded-xl text-[10px] font-bold text-slate-300 uppercase tracking-widest">
+                           {t}
+                         </span>
+                       ))}
                     </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="space-y-8">
+                    {/* Video Player for Skyline Originals */}
+                    <div className="glass-card rounded-[2.5rem] overflow-hidden shadow-2xl">
+                       <div className="aspect-video w-full bg-black">
+                          <iframe 
+                            className="w-full h-full"
+                            src={`https://www.youtube.com/embed/${selectedModule.embedId}?autoplay=0&controls=1&modestbranding=1`}
+                            title={selectedModule.title}
+                            frameBorder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                          ></iframe>
+                       </div>
+                       <div className="p-8 bg-slate-900 flex items-center justify-between border-t border-white/5">
+                          <div className="flex flex-col">
+                            <span className="text-xs font-black text-white uppercase tracking-widest mb-1">{selectedModule.title}</span>
+                            <span className="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Archived Session • instructor: {selectedModule.instructor}</span>
+                          </div>
+                          <button className="px-6 py-2 glass-card rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-300 hover:text-white transition-colors">
+                            Download Notes
+                          </button>
+                       </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <div className="glass-card rounded-[2.5rem] p-8 border-blue-500/20">
+                        <h4 className="text-lg font-bold text-white mb-4">Session Abstract</h4>
+                        <p className="text-slate-400 text-sm leading-relaxed mb-6">{selectedModule.description}</p>
+                        <div className="flex items-center gap-4">
+                           <div className="w-10 h-10 rounded-full bg-blue-600/20 flex items-center justify-center text-blue-400">
+                             <i className="fa-solid fa-user-graduate text-sm"></i>
+                           </div>
+                           <div className="flex flex-col">
+                             <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Lead Faculty</span>
+                             <span className="text-xs font-bold text-white">{selectedModule.instructor}</span>
+                           </div>
+                        </div>
+                      </div>
+                      <div className="glass-card rounded-[2.5rem] p-8 border-emerald-500/20">
+                        <h4 className="text-lg font-bold text-white mb-4">Milestones</h4>
+                        <div className="space-y-3">
+                          {selectedModule.tasks.map((t, i) => (
+                            <div key={i} className="flex items-center gap-3 text-xs text-slate-300">
+                              <i className="fa-solid fa-circle-check text-emerald-500"></i>
+                              <span>{t}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
-          </div>
-        </div>
-
-        {/* Dynamic Footer for Academy */}
-        <div className="mt-24 p-12 glass-card rounded-[4rem] border-white/5 grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
-          <div>
-            <span className="text-3xl font-black text-white block mb-1">11</span>
-            <span className="text-[9px] font-black uppercase text-slate-500 tracking-widest">Core Tracks</span>
-          </div>
-          <div>
-            <span className="text-3xl font-black text-white block mb-1">HD</span>
-            <span className="text-[9px] font-black uppercase text-slate-500 tracking-widest">Video Rec.</span>
-          </div>
-          <div>
-            <span className="text-3xl font-black text-white block mb-1">24/7</span>
-            <span className="text-[9px] font-black uppercase text-slate-500 tracking-widest">Lab Access</span>
-          </div>
-          <div>
-            <span className="text-3xl font-black text-white block mb-1">100%</span>
-            <span className="text-[9px] font-black uppercase text-slate-500 tracking-widest">Hands-On</span>
           </div>
         </div>
       </div>
