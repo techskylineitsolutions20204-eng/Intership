@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 
 interface NavbarProps {
   activeTab: string;
@@ -7,22 +7,15 @@ interface NavbarProps {
 }
 
 const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
-  const [showTrainings, setShowTrainings] = useState(false);
-
   const navItems = [
     { id: 'home', label: 'Home' },
     { id: 'tech', label: 'Internship Tracks' },
-    { id: 'self-learning', label: 'Learning Hub' },
+    { id: 'self-learning', label: 'Learning Hub (Free Courses)' },
     { id: 'labs', label: 'Labs & Projects' },
     { id: 'career', label: 'Mentorship' },
-    { id: 'terms', label: 'Certification' }, // Reusing terms/legal for now as a cert info placeholder
+    { id: 'terms', label: 'Certification' },
     { id: 'contact', label: 'Career Support' },
   ];
-
-  const handleTechClick = (tabId: string) => {
-    setActiveTab(tabId);
-    setShowTrainings(false);
-  };
 
   return (
     <nav className="bg-slate-950/80 backdrop-blur-xl border-b border-white/5 sticky top-0 z-50">
