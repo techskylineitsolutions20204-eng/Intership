@@ -4,10 +4,13 @@ import React, { useState } from 'react';
 const Registration: React.FC = () => {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [name, setName] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    // Simulate API call and save user name for the dashboard/certificate
+    localStorage.setItem('ts_user_name', name);
     setTimeout(() => {
       setLoading(false);
       setSubmitted(true);
@@ -22,7 +25,7 @@ const Registration: React.FC = () => {
         </div>
         <h2 className="text-5xl font-black text-white mb-4">Application Dispatched!</h2>
         <p className="text-xl text-slate-400 max-w-xl mx-auto leading-relaxed">
-          Your credentials are being analyzed by our 2026 recruitment engine. 
+          Welcome to the program, <strong>{name}</strong>! Your credentials are being analyzed by our 2026 recruitment engine. 
           Expect a response at your primary email within 72 hours.
         </p>
         <button 
@@ -54,7 +57,14 @@ const Registration: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-3">
                 <label className="text-[10px] font-black uppercase text-slate-500 tracking-[0.2em]">Legal Full Name</label>
-                <input required type="text" className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all text-white" placeholder="e.g. Abhinav Joseph" />
+                <input 
+                  required 
+                  type="text" 
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all text-white" 
+                  placeholder="e.g. Abhinav Joseph" 
+                />
               </div>
               <div className="space-y-3">
                 <label className="text-[10px] font-black uppercase text-slate-500 tracking-[0.2em]">Contact Email Address</label>

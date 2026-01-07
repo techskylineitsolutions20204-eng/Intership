@@ -14,6 +14,8 @@ import Curriculum from './components/Curriculum';
 import Terms from './components/Terms';
 import SelfLearning from './components/SelfLearning';
 import LiveLabs from './components/LiveLabs';
+import Dashboard from './components/Dashboard';
+import CertificateView from './components/CertificateView';
 
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState('home');
@@ -38,6 +40,8 @@ const App: React.FC = () => {
         {activeTab === 'career' && <CareerCoach />}
         {activeTab === 'self-learning' && <SelfLearning />}
         {activeTab === 'labs' && <LiveLabs />}
+        {activeTab === 'dashboard' && <Dashboard onOpenCert={() => setActiveTab('certificate')} />}
+        {activeTab === 'certificate' && <CertificateView />}
         {activeTab === 'register' && <Registration />}
         {activeTab === 'contact' && <Contact />}
         {activeTab === 'about' && <About />}

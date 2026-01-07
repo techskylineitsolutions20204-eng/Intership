@@ -10,11 +10,11 @@ const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
   const navItems = [
     { id: 'home', label: 'Home' },
     { id: 'tech', label: 'Internship Tracks' },
-    { id: 'self-learning', label: 'Learning Hub (Free Courses)' },
+    { id: 'self-learning', label: 'Learning Hub' },
+    { id: 'dashboard', label: 'My Dashboard' },
     { id: 'labs', label: 'Labs & Projects' },
     { id: 'career', label: 'Mentorship' },
-    { id: 'terms', label: 'Certification' },
-    { id: 'contact', label: 'Career Support' },
+    { id: 'partners', label: 'University Alliances' },
   ];
 
   return (

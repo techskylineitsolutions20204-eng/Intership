@@ -7,8 +7,7 @@ interface Course {
   provider: string;
   skills: string[];
   link: string;
-  auditLink?: string;
-  type: '100% Free' | 'Audit for Free';
+  type: '100% Free';
   hasCertificate: boolean;
   category: string;
   description: string;
@@ -29,90 +28,117 @@ const SelfLearning: React.FC = () => {
       : [...completedCourses, id];
     setCompletedCourses(updated);
     localStorage.setItem('ts_completed_courses', JSON.stringify(updated));
+    
+    // Also sync to dashboard progress for certificate unlocking
+    const savedDashboard = localStorage.getItem('ts_dashboard_progress');
+    const dashboard = savedDashboard ? JSON.parse(savedDashboard) : {};
+    dashboard[id] = !completedCourses.includes(id);
+    localStorage.setItem('ts_dashboard_progress', JSON.stringify(dashboard));
   };
 
   const courses: Course[] = [
-    // AI & Generative AI Internship
+    // AI & Generative AI
     {
       id: 'google-ai-essentials',
       title: "Google AI Essentials",
-      provider: "Google",
+      provider: "Google Skillshop",
       skills: ["AI Basics", "GenAI", "Prompting"],
       link: "https://grow.google/ai/",
       type: '100% Free',
       hasCertificate: true,
       category: 'AI & Generative AI Internship',
-      description: "Learn how to use generative AI tools to help you at work and in your everyday life. This is a 100% free course with no payment or trial required."
-    },
-    {
-      id: 'intro-to-gen-ai-coursera',
-      title: "Introduction to Generative AI",
-      provider: "Google Cloud (Coursera)",
-      skills: ["Large Language Models", "Responsible AI", "Generative AI Foundations"],
-      link: "https://www.coursera.org/learn/introduction-to-generative-ai",
-      auditLink: "https://www.coursera.org/learn/introduction-to-generative-ai",
-      type: 'Audit for Free',
-      hasCertificate: false,
-      category: 'AI & Generative AI Internship',
-      description: "This course explains what Generative AI is, how it is used, and how it differs from traditional machine learning methods."
+      description: "Master the fundamentals of AI at zero cost. Official Google training path."
     },
     {
       id: 'ibm-ai-fundamentals',
       title: "AI Fundamentals",
       provider: "IBM SkillsBuild",
-      skills: ["AI Ethics", "Neural Networks", "IBM Watson"],
+      skills: ["AI Ethics", "Neural Networks", "Responsible AI"],
       link: "https://skillsbuild.org",
       type: '100% Free',
       hasCertificate: true,
       category: 'AI & Generative AI Internship',
-      description: "A comprehensive intro to AI provided by IBM. Always free, no subscription required."
+      description: "Comprehensive introduction to AI by IBM. Earn a verifiable badge."
     },
-    // Data Science & Python Internship
+    {
+      id: 'google-genai-path',
+      title: "Generative AI Learning Path",
+      provider: "Google Cloud",
+      skills: ["LLMs", "Image Generation", "Vertex AI"],
+      link: "https://www.cloudskillsboost.google/paths/118",
+      type: '100% Free',
+      hasCertificate: true,
+      category: 'AI & Generative AI Internship',
+      description: "Official Google Cloud path for mastering Generative AI models."
+    },
+    // Data Science & Python
     {
       id: 'fcc-py-everybody',
       title: "Python for Everybody",
       provider: "freeCodeCamp",
-      skills: ["Python", "Data Structures", "Network Programming"],
+      skills: ["Python", "Data Structures", "Web Scraping"],
       link: "https://www.freecodecamp.org/learn",
       type: '100% Free',
       hasCertificate: true,
       category: 'Data Science & Python Internship',
-      description: "The gold standard for learning Python. Entirely free, no payment modes or EMI plans."
+      description: "The world's most popular free Python course. Non-profit education."
     },
     {
-      id: 'fcc-data-analysis',
-      title: "Data Analysis with Python",
-      provider: "freeCodeCamp",
-      skills: ["NumPy", "Pandas", "Matplotlib"],
-      link: "https://www.freecodecamp.org/learn",
+      id: 'kaggle-ds',
+      title: "Kaggle Data Science Labs",
+      provider: "Kaggle",
+      skills: ["Pandas", "Machine Learning", "Data Visualization"],
+      link: "https://www.kaggle.com/learn",
       type: '100% Free',
       hasCertificate: true,
       category: 'Data Science & Python Internship',
-      description: "Learn to process data at scale. Non-profit education with no hidden costs."
+      description: "Interactive coding labs for hands-on Data Science mastery."
     },
-    // Full Stack Developer Internship
-    {
-      id: 'fcc-responsive-web',
-      title: "Responsive Web Design",
-      provider: "freeCodeCamp",
-      skills: ["HTML5", "CSS3", "Flexbox", "Grid"],
-      link: "https://www.freecodecamp.org/learn",
-      type: '100% Free',
-      hasCertificate: true,
-      category: 'Full Stack Developer Internship',
-      description: "Learn modern web design from scratch. 100% free and certificate included."
-    },
-    // Cybersecurity Internship
+    // Cybersecurity
     {
       id: 'cisco-intro-cyber',
       title: "Introduction to Cybersecurity",
       provider: "Cisco Networking Academy",
-      skills: ["Security Principles", "Threat Actor Motives", "Risk Management"],
-      link: "https://www.netacad.com",
+      skills: ["Security Ops", "Network Defense", "Threat Intel"],
+      link: "https://skillsforall.com",
       type: '100% Free',
       hasCertificate: true,
       category: 'Cybersecurity Internship',
-      description: "Start your career in security with Cisco. Zero fees, permanent access."
+      description: "Foundational security training from Cisco. Industry recognized."
+    },
+    {
+      id: 'ibm-cyber-fundamentals',
+      title: "Cybersecurity Fundamentals",
+      provider: "IBM SkillsBuild",
+      skills: ["Cryptography", "Cloud Security", "SOC Operations"],
+      link: "https://www.ibm.com/skills/learn/cybersecurity",
+      type: '100% Free',
+      hasCertificate: true,
+      category: 'Cybersecurity Internship',
+      description: "Professional grade security curriculum provided for free by IBM."
+    },
+    // Cloud & DevOps
+    {
+      id: 'ms-azure-fundamentals',
+      title: "Azure Fundamentals (AZ-900)",
+      provider: "Microsoft Learn",
+      skills: ["Cloud Concepts", "Azure Services", "Security"],
+      link: "https://learn.microsoft.com/training",
+      type: '100% Free',
+      hasCertificate: true,
+      category: 'Azure & DevOps Internship',
+      description: "Official Microsoft path to cloud proficiency. Unlimited access."
+    },
+    {
+      id: 'aws-free-tier',
+      title: "AWS Technical Essentials",
+      provider: "AWS Training",
+      skills: ["EC2", "S3", "IAM", "VPC"],
+      link: "https://www.aws.training/LearningLibrary?filters=free",
+      type: '100% Free',
+      hasCertificate: true,
+      category: 'Azure & DevOps Internship',
+      description: "Get started with the world's most popular cloud platform for free."
     }
   ];
 
@@ -124,11 +150,11 @@ const SelfLearning: React.FC = () => {
         <div className="mb-16">
           <div className="inline-flex items-center px-4 py-2 glass-card text-emerald-400 rounded-full text-xs font-black uppercase tracking-[0.2em] mb-6">
             <i className="fa-solid fa-gift mr-2"></i>
-            100% Free Courses - No Payment Mode - No EMI - No Trials
+            Verified 100% Free Program
           </div>
           <h2 className="text-5xl font-black text-white mb-6">TechSkyline <span className="text-indigo-500">Learning Hub</span></h2>
           <p className="text-xl text-slate-400 max-w-2xl leading-relaxed">
-            Curated list of professional internship learning tracks. <span className="text-emerald-500 font-bold">Every course is 100% free with NO payments, NO EMI plans, and NO trial versions.</span>
+            Curated list of globally trusted courses. <span className="text-emerald-500 font-bold">No Payments. No EMI. No Trial Versions.</span> Complete these to unlock TechSkyline project access.
           </p>
         </div>
 
@@ -161,13 +187,11 @@ const SelfLearning: React.FC = () => {
               <div>
                 <div className="flex justify-between items-start mb-6">
                   <div className="flex flex-col gap-1">
-                    <span className={`px-3 py-1 text-[9px] font-black uppercase tracking-widest rounded-full border w-fit ${
-                      course.type === '100% Free' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-blue-500/10 text-blue-400 border-blue-500/20'
-                    }`}>
+                    <span className="px-3 py-1 bg-emerald-500/10 text-emerald-400 text-[9px] font-black uppercase tracking-widest rounded-full border border-emerald-500/20 w-fit">
                       {course.type}
                     </span>
                     {course.hasCertificate && (
-                      <span className="px-3 py-1 bg-white/5 text-slate-500 text-[8px] font-black uppercase tracking-widest rounded-full border border-white/10 w-fit">
+                      <span className="px-3 py-1 bg-blue-500/10 text-blue-400 text-[9px] font-black uppercase tracking-widest rounded-full border border-blue-500/20 w-fit">
                         Free Certificate
                       </span>
                     )}
@@ -206,7 +230,7 @@ const SelfLearning: React.FC = () => {
                   rel="noopener noreferrer"
                   className="w-full py-4 bg-white text-slate-950 rounded-2xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 hover:bg-emerald-50 transition-all shadow-xl"
                 >
-                  {course.type === 'Audit for Free' ? 'Audit for Free' : 'Start Free Course'}
+                  Start Course (Free)
                   <i className="fa-solid fa-arrow-up-right-from-square text-[8px]"></i>
                 </a>
                 <button 
@@ -222,31 +246,6 @@ const SelfLearning: React.FC = () => {
               </div>
             </div>
           ))}
-        </div>
-
-        {/* Information Section */}
-        <div className="mt-24 p-12 glass-card rounded-[4rem] border-emerald-500/20 bg-emerald-600/5 text-center relative overflow-hidden">
-           <div className="w-20 h-20 bg-emerald-500/10 text-emerald-500 rounded-3xl flex items-center justify-center mx-auto mb-8 text-4xl shadow-2xl shadow-emerald-500/10 border border-emerald-500/20">
-              <i className="fa-solid fa-stamp"></i>
-           </div>
-           <h3 className="text-4xl font-black text-white mb-4">University Verification Node</h3>
-           <p className="text-slate-400 max-w-3xl mx-auto mb-12 leading-relaxed text-lg">
-             Completion of these tracks is vetted as part of the <span className="text-white">TechSkyline ISO Certified Internship</span>. We collaborate with colleges globally to ensure these skills are recognized for academic credits.
-           </p>
-           
-           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto border-t border-white/5 pt-12">
-              {[
-                { label: "Cost", val: "$0.00" },
-                { label: "EMI Plans", val: "NONE" },
-                { label: "Access", val: "PERMANENT" },
-                { label: "Status", val: "100% FREE" }
-              ].map((stat, i) => (
-                <div key={i} className="flex flex-col items-center">
-                  <span className="text-[10px] font-black text-slate-500 uppercase mb-2 tracking-widest">{stat.label}</span>
-                  <span className="text-xl font-black text-white">{stat.val}</span>
-                </div>
-              ))}
-           </div>
         </div>
       </div>
     </section>
