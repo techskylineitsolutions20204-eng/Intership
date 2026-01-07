@@ -9,14 +9,53 @@ interface NavbarProps {
 const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
   const [showTrainings, setShowTrainings] = useState(false);
 
-  const PARTNERS = [
-    { name: 'Gen AI Foundations', url: 'https://cloud.google.com/learn/training/machinelearning-ai?utm_source=chatgpt.com#generative-ai-courses-by-level' },
-    { name: 'Agentic AI Workflows', url: 'https://www.deeplearning.ai/short-courses/ai-agentic-workflows-with-crewai/' },
-    { name: 'Google Cloud ML', url: 'https://cloud.google.com/learn/training/machinelearning-ai?utm_source=chatgpt.com#get-certified-machine-learning' },
-    { name: 'DeepLearning.AI', url: 'https://www.deeplearning.ai/short-courses/chatgpt-prompt-engineering-for-developers/' },
-    { name: 'Kaggle Learn', url: 'https://www.kaggle.com/learn/intro-to-machine-learning' },
-    { name: 'Udacity AWS', url: 'https://www.udacity.com/course/aws-machine-learning-foundations--ud065' },
-    { name: 'Uxcel AI Design', url: 'https://app.uxcel.com/courses/ai-fundamentals-for-ux' }
+  const TRAINING_CATEGORIES = [
+    {
+      title: 'AI & Intelligence',
+      items: [
+        { name: 'AI with Data Science', icon: 'fa-brain' },
+        { name: 'Foundation of AI', icon: 'fa-atom' },
+        { name: 'AI Automation', icon: 'fa-robot' },
+        { name: 'Python for AI', icon: 'fa-brands fa-python' }
+      ]
+    },
+    {
+      title: 'Cloud & Infrastructure',
+      items: [
+        { name: 'AWS', icon: 'fa-brands fa-aws' },
+        { name: 'Azure DevOps', icon: 'fa-infinity' },
+        { name: 'Google Cloud Security', icon: 'fa-shield-halved' },
+        { name: 'Edge 5G', icon: 'fa-tower-broadcast' }
+      ]
+    },
+    {
+      title: 'Enterprise Solutions',
+      items: [
+        { name: 'SAP S/4HANA (H4 Hana)', icon: 'fa-database' },
+        { name: 'SAP Ariba', icon: 'fa-cart-shopping' },
+        { name: 'SAP IBP & OBP', icon: 'fa-chart-line' },
+        { name: 'Workday HCM', icon: 'fa-users-gear' },
+        { name: 'Oracle Primavera Unifier', icon: 'fa-diagram-project' },
+        { name: 'Oracle P6', icon: 'fa-calendar-check' }
+      ]
+    },
+    {
+      title: 'Data & Security',
+      items: [
+        { name: 'Cyber Security', icon: 'fa-user-secret' },
+        { name: 'Power BI', icon: 'fa-chart-bar' },
+        { name: 'Tableau', icon: 'fa-chart-pie' },
+        { name: 'RPA & Robotics', icon: 'fa-gears' },
+        { name: 'IOT Systems', icon: 'fa-house-signal' }
+      ]
+    },
+    {
+      title: 'Management & Agile',
+      items: [
+        { name: 'Scrum Master', icon: 'fa-person-running' },
+        { name: 'Product Management', icon: 'fa-box-open' }
+      ]
+    }
   ];
 
   const navItems = [
@@ -36,7 +75,7 @@ const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
             className="flex items-center cursor-pointer group" 
             onClick={() => setActiveTab('home')}
           >
-            <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center mr-3 group-hover:rotate-12 transition-transform shadow-lg shadow-blue-500/20">
+            <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center mr-3 group-hover:rotate-12 transition-transform shadow-lg shadow-indigo-500/20">
               <i className="fa-solid fa-code text-white text-lg"></i>
             </div>
             <span className="text-white font-black text-xl tracking-tighter">TechSkyline</span>
@@ -69,23 +108,27 @@ const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
                {showTrainings && (
                  <div 
                    onMouseLeave={() => setShowTrainings(false)}
-                   className="absolute top-full right-0 mt-2 w-72 bg-slate-900 border border-white/10 rounded-2xl p-4 shadow-2xl shadow-black/50 animate-fade-in-up"
+                   className="absolute top-full right-[-100px] mt-2 w-[800px] bg-slate-900 border border-white/10 rounded-3xl p-8 shadow-2xl shadow-black/50 animate-fade-in-up grid grid-cols-3 gap-8"
                  >
-                    <div className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-4 px-2">Official Partner Nodes</div>
-                    <div className="space-y-1">
-                      {PARTNERS.map(p => (
-                        <a 
-                          key={p.name}
-                          href={p.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center justify-between p-3 rounded-xl hover:bg-white/5 text-slate-300 hover:text-white transition-all group"
-                        >
-                          <span className="text-xs font-bold">{p.name}</span>
-                          <i className="fa-solid fa-arrow-up-right-from-square text-[9px] opacity-0 group-hover:opacity-100 transition-opacity"></i>
-                        </a>
-                      ))}
+                    <div className="col-span-3 border-b border-white/5 pb-4 mb-2 flex items-center justify-between">
+                       <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Industry Mastery Nodes v2026</span>
+                       <span className="text-[9px] bg-indigo-600/20 text-indigo-400 px-2 py-0.5 rounded font-black uppercase tracking-widest">Verified Curriculums</span>
                     </div>
+                    {TRAINING_CATEGORIES.map(category => (
+                      <div key={category.title} className="space-y-3">
+                         <h4 className="text-[10px] font-black text-indigo-500/80 uppercase tracking-widest">{category.title}</h4>
+                         <div className="space-y-1">
+                           {category.items.map(item => (
+                             <div key={item.name} className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 transition-colors cursor-pointer group">
+                                <div className="w-6 h-6 rounded bg-white/5 flex items-center justify-center group-hover:bg-indigo-600 transition-colors">
+                                   <i className={`fa-solid ${item.icon} text-[10px] text-slate-400 group-hover:text-white`}></i>
+                                </div>
+                                <span className="text-[11px] font-bold text-slate-400 group-hover:text-white transition-colors">{item.name}</span>
+                             </div>
+                           ))}
+                         </div>
+                      </div>
+                    ))}
                  </div>
                )}
             </div>
@@ -97,9 +140,6 @@ const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
               className="px-6 py-2.5 bg-indigo-600 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-indigo-500 transition-all shadow-xl shadow-indigo-500/20 hidden sm:block"
             >
               Apply Now
-            </button>
-            <button className="lg:hidden text-slate-400 hover:text-white p-2">
-              <i className="fa-solid fa-bars-staggered text-xl"></i>
             </button>
           </div>
         </div>
