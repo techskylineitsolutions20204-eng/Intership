@@ -1,242 +1,208 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
-interface Module {
+interface Course {
   id: string;
   title: string;
-  category: string;
-  duration: string;
-  embedId: string; 
-  recordedAt: string;
-  instructor: string;
-  labUrl: string;
-  description: string;
-  tasks: string[];
-  externalUrl?: string;
-  platformColor?: string;
-  icon?: string;
-  liveNotes?: string;
+  provider: string;
+  skills: string[];
+  link: string;
+  auditLink?: string;
+  type: 'Free' | 'Audit Free';
+  category: 'AI & GenAI' | 'Data Science' | 'Full Stack' | 'Cloud';
+  description?: string;
 }
 
 const SelfLearning: React.FC = () => {
-  const [selectedModule, setSelectedModule] = useState<Module | null>(null);
-  
-  const PARTNER_LINKS = {
-    UXCEL: "https://app.uxcel.com/courses/ai-fundamentals-for-ux?_gl=1*1don438*_gcl_au*ODU5OTA0NTg5LjE3Njc2ODQ2ODk.",
-    GOOGLE_ML: "https://developers.google.com/machine-learning/crash-course",
-    DEEPLEARNING_AI: "https://www.deeplearning.ai/short-courses/chatgpt-prompt-engineering-for-developers/",
-    KAGGLE: "https://www.kaggle.com/learn/intro-to-machine-learning",
-    UDACITY: "https://www.udacity.com/course/aws-machine-learning-foundations--ud065",
-    GCP_GENAI: "https://cloud.google.com/learn/training/machinelearning-ai?utm_source=chatgpt.com#generative-ai-courses-by-level",
-    GCP_ML_ENG: "https://cloud.google.com/learn/training/machinelearning-ai?utm_source=chatgpt.com#hands-on-courses-ml-engineers",
-    GCP_WORKFLOW: "https://cloud.google.com/learn/training/machinelearning-ai?utm_source=chatgpt.com#generative-ai-workflow",
-    GCP_CERT: "https://cloud.google.com/learn/training/machinelearning-ai?utm_source=chatgpt.com#get-certified-machine-learning"
+  const [completedCourses, setCompletedCourses] = useState<string[]>([]);
+  const [activeCategory, setActiveCategory] = useState<string>('AI & GenAI');
+
+  useEffect(() => {
+    const saved = localStorage.getItem('ts_completed_courses');
+    if (saved) setCompletedCourses(JSON.parse(saved));
+  }, []);
+
+  const toggleComplete = (id: string) => {
+    const updated = completedCourses.includes(id) 
+      ? completedCourses.filter(c => c !== id) 
+      : [...completedCourses, id];
+    setCompletedCourses(updated);
+    localStorage.setItem('ts_completed_courses', JSON.stringify(updated));
   };
 
-  const modules: Module[] = [
+  const courses: Course[] = [
     {
-      id: 'agentic-ai-orchestration',
-      title: "Agentic AI: Multi-Agent Orchestration",
-      category: "Elite Track",
-      duration: "110 mins",
-      embedId: "q6f_N7J-ZWA",
-      recordedAt: "Jan 15, 2026",
-      instructor: "Abhinav Joseph",
-      labUrl: "#",
-      description: "Learn to build autonomous agents using frameworks like CrewAI and AutoGen. Master the art of task delegation and tool calling.",
-      tasks: ["Agent Persona Design", "Tool Calling & Function Definitions", "ReAct Prompting Strategies", "Inter-agent Communication"],
-      liveNotes: "Production Insight:\n- Agents must have well-defined roles\n- Tool validation is critical for safety\n- Orchestration loops need termination conditions"
+      id: 'google-ai-essentials',
+      title: "Google AI Essentials",
+      provider: "Google",
+      skills: ["AI Basics", "GenAI", "Prompting"],
+      link: "https://grow.google/ai/",
+      type: 'Free',
+      category: 'AI & GenAI',
+      description: "Learn the fundamentals of AI and how it's transforming the industry."
     },
     {
-      id: 'gcp-genai-mastery',
-      title: "Google Cloud: GenAI Path",
-      category: "Elite Certification",
-      duration: "Multi-level",
-      embedId: "",
-      recordedAt: "GCP Official",
-      instructor: "Google Cloud",
-      labUrl: PARTNER_LINKS.GCP_GENAI,
-      description: "Master Generative AI from foundational concepts to advanced enterprise deployment strategies on Google Cloud Platform.",
-      tasks: ["Large Language Models", "Image Generation", "Attention Mechanisms"],
-      externalUrl: PARTNER_LINKS.GCP_GENAI,
-      platformColor: "blue",
-      icon: "fa-cloud",
-      liveNotes: "Focus on vertex AI and generative AI studio. Essential for professional cloud certification."
+      id: 'intro-to-gen-ai',
+      title: "Introduction to Generative AI",
+      provider: "Google Cloud (Coursera)",
+      skills: ["Large Language Models", "Responsible AI", "Vertex AI"],
+      link: "https://www.coursera.org/learn/introduction-to-generative-ai",
+      auditLink: "https://www.coursera.org/learn/introduction-to-generative-ai",
+      type: 'Audit Free',
+      category: 'AI & GenAI',
+      description: "A comprehensive intro to generative models and their applications."
     },
     {
-      id: 'gen-ai-2026',
-      title: "Generative AI & LLM Architectures",
-      category: "Skyline Original",
-      duration: "90 mins",
-      embedId: "5sLYA48vW3U",
-      recordedAt: "Nov 05, 2025",
-      instructor: "Abhinav Joseph",
-      labUrl: "#",
-      description: "Class recording on building production-grade RAG systems and fine-tuning models for specific domain knowledge.",
-      tasks: ["Vector DB Integration", "Context Window Management", "Fine-tuning v/s RAG"],
-      liveNotes: "Key Takeaways:\n- RAG vs Fine-tuning tradeoffs\n- Vector indexing strategies\n- Hallucination mitigation techniques"
+      id: 'elements-of-ai',
+      title: "Elements of AI",
+      provider: "University of Helsinki",
+      skills: ["AI Algorithms", "Neural Networks", "Ethics"],
+      link: "https://www.elementsofai.com/",
+      type: 'Free',
+      category: 'AI & GenAI'
     },
     {
-      id: 'deeplearning-prompt',
-      title: "ChatGPT Prompt Engineering",
-      category: "Specialist Track",
-      duration: "Short Course",
-      embedId: "",
-      recordedAt: "Partner Track",
-      instructor: "Andrew Ng / OpenAI",
-      labUrl: PARTNER_LINKS.DEEPLEARNING_AI,
-      description: "Learn how to use a large language model (LLM) to quickly build new and powerful applications.",
-      tasks: ["Prompting Best Practices", "Iterative Prompting", "Summarizing & Inferring"],
-      externalUrl: PARTNER_LINKS.DEEPLEARNING_AI,
-      platformColor: "indigo",
-      icon: "fa-brain-circuit",
-      liveNotes: "Essential for all engineering roles. Focus on iterative refinement of prompts."
+      id: 'py-for-everybody',
+      title: "Python for Everybody",
+      provider: "Coursera",
+      skills: ["Python", "Data Structures", "Databases"],
+      link: "https://www.coursera.org/specializations/python",
+      auditLink: "https://www.coursera.org/specializations/python",
+      type: 'Audit Free',
+      category: 'Data Science'
     },
     {
-      id: 'fullstack-modern',
-      title: "Full Stack Mastery (React 19 & Node)",
-      category: "Skyline Original",
-      duration: "150 mins",
-      embedId: "wS9S_O908yU",
-      recordedAt: "Feb 02, 2026",
-      instructor: "Emily Rodriguez",
-      labUrl: "#",
-      description: "Comprehensive class on end-to-end development using React 19 Server Components and Node.js.",
-      tasks: ["Server Components", "State Management v2026", "API Layer Security"],
-      liveNotes: "Update: React 19 features 'use' hook and server-side actions are now the standard."
+      id: 'kaggle-ml',
+      title: "Intro to Machine Learning",
+      provider: "Kaggle",
+      skills: ["Scikit-Learn", "Model Validation", "Random Forests"],
+      link: "https://www.kaggle.com/learn/intro-to-machine-learning",
+      type: 'Free',
+      category: 'Data Science'
+    },
+    {
+      id: 'freecodecamp-fs',
+      title: "Full Stack Developer",
+      provider: "freeCodeCamp",
+      skills: ["React", "Node.js", "MongoDB"],
+      link: "https://www.freecodecamp.org/learn/",
+      type: 'Free',
+      category: 'Full Stack'
     }
   ];
 
+  const categories = Array.from(new Set(courses.map(c => c.category)));
+
   return (
-    <section className="py-24 bg-slate-950">
+    <section className="py-24 bg-slate-950 min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-16">
-          <div className="inline-flex items-center px-4 py-2 glass-card text-blue-400 rounded-full text-xs font-black uppercase tracking-widest mb-6">
-            <i className="fa-solid fa-clapperboard mr-2"></i>
-            Recorded Training Archive
+          <div className="inline-flex items-center px-4 py-2 glass-card text-indigo-400 rounded-full text-xs font-black uppercase tracking-[0.2em] mb-6">
+            <i className="fa-solid fa-graduation-cap mr-2"></i>
+            TechSkyline Learning Hub (Free Courses)
           </div>
-          <h2 className="text-5xl font-black text-white mb-6">Mastery <span className="text-blue-500">Repository</span></h2>
+          <h2 className="text-5xl font-black text-white mb-6">Professional <span className="text-indigo-500">Learning Track</span></h2>
           <p className="text-xl text-slate-400 max-w-2xl leading-relaxed">
-            Access recorded deep-dive sessions for every technology track. Each session includes live notes and expert curriculum mapping.
+            Free global learning resources curated by TechSkyline. Complete learning → Apply skills → Earn internship certification.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-          {/* Sidebar */}
-          <div className="lg:col-span-4 space-y-4">
-            <h3 className="text-sm font-black text-slate-500 uppercase tracking-widest mb-4 px-2">Knowledge Domains</h3>
-            <div className="space-y-3 max-h-[700px] overflow-y-auto pr-2">
-              {modules.map((mod) => (
-                <button
-                  key={mod.id}
-                  onClick={() => setSelectedModule(mod)}
-                  className={`w-full text-left p-6 rounded-3xl transition-all border ${
-                    selectedModule?.id === mod.id 
-                      ? 'bg-blue-600 border-blue-400 shadow-xl shadow-blue-500/20' 
-                      : 'glass-card border-white/5 hover:border-white/10'
-                  }`}
-                >
-                  <div className="flex justify-between items-start mb-1">
-                    <span className={`text-[9px] font-black uppercase tracking-widest ${
-                      selectedModule?.id === mod.id ? 'text-blue-100' : 'text-blue-500'
-                    }`}>
-                      {mod.category}
-                    </span>
-                    <span className={`text-[10px] font-bold ${
-                      selectedModule?.id === mod.id ? 'text-blue-200' : 'text-slate-500'
-                    }`}>
-                      {mod.duration}
-                    </span>
-                  </div>
-                  <h4 className={`text-lg font-bold mb-2 ${
-                    selectedModule?.id === mod.id ? 'text-white' : 'text-slate-200'
-                  }`}>
-                    {mod.title}
-                  </h4>
-                  <div className="flex items-center justify-between">
-                    <span className={`text-[10px] font-bold ${
-                      selectedModule?.id === mod.id ? 'text-blue-100' : 'text-slate-500'
-                    }`}>
-                      By: {mod.instructor}
-                    </span>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
+        {/* Category Switcher */}
+        <div className="flex flex-wrap gap-4 mb-12">
+          {categories.map(cat => (
+            <button
+              key={cat}
+              onClick={() => setActiveCategory(cat)}
+              className={`px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                activeCategory === cat 
+                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' 
+                  : 'bg-white/5 text-slate-500 border border-white/10 hover:border-indigo-500/50 hover:text-white'
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
 
-          {/* Module Content */}
-          <div className="lg:col-span-8">
-            {!selectedModule ? (
-              <div className="h-full min-h-[500px] glass-card rounded-[3rem] flex flex-col items-center justify-center text-center p-12">
-                <i className="fa-solid fa-film text-4xl text-slate-700 mb-6"></i>
-                <h3 className="text-2xl font-bold text-white mb-4">Select a domain session</h3>
-                <p className="text-slate-500 max-w-sm">Every tech track has dedicated high-definition session recordings and interactive notes.</p>
-              </div>
-            ) : (
-              <div className="space-y-8 animate-fade-in-up">
-                {/* Visualizer / Embed */}
-                <div className="glass-card rounded-[3rem] overflow-hidden shadow-2xl relative">
-                  {selectedModule.externalUrl ? (
-                    <div className="p-16 lg:p-24 text-center">
-                       <i className={`fa-solid ${selectedModule.icon || 'fa-rocket'} text-5xl text-blue-500 mb-8`}></i>
-                       <h3 className="text-3xl font-black text-white mb-6">{selectedModule.title}</h3>
-                       <p className="text-slate-400 mb-10 max-w-lg mx-auto">{selectedModule.description}</p>
-                       <a href={selectedModule.externalUrl} target="_blank" rel="noopener noreferrer" className="px-10 py-4 bg-white text-slate-950 rounded-2xl font-black uppercase tracking-widest text-xs inline-flex items-center gap-3">
-                          Enter Platform Node
-                          <i className="fa-solid fa-arrow-up-right-from-square"></i>
-                       </a>
-                    </div>
-                  ) : (
-                    <div className="aspect-video w-full bg-black">
-                      <iframe 
-                        className="w-full h-full"
-                        src={`https://www.youtube.com/embed/${selectedModule.embedId}?modestbranding=1&rel=0`}
-                        title={selectedModule.title}
-                        frameBorder="0"
-                        allowFullScreen
-                      ></iframe>
-                    </div>
+        {/* Courses Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {courses.filter(c => c.category === activeCategory).map((course) => (
+            <div key={course.id} className="glass-card rounded-[2.5rem] p-8 flex flex-col justify-between border-white/5 hover:border-indigo-500/30 transition-all group">
+              <div>
+                <div className="flex justify-between items-start mb-6">
+                  <span className="px-3 py-1 bg-indigo-600/10 text-indigo-400 text-[9px] font-black uppercase tracking-widest rounded-full border border-indigo-500/20">
+                    {course.type}
+                  </span>
+                  {completedCourses.includes(course.id) && (
+                    <span className="text-emerald-500 text-xs font-black uppercase flex items-center gap-1">
+                      <i className="fa-solid fa-check-circle"></i> Completed
+                    </span>
                   )}
                 </div>
+                
+                <h3 className="text-2xl font-black text-white mb-2 leading-tight group-hover:text-indigo-400 transition-colors">
+                  {course.title}
+                </h3>
+                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">
+                  Provider: <span className="text-slate-300">{course.provider}</span>
+                </p>
+                
+                <p className="text-sm text-slate-400 mb-6 line-clamp-2">
+                  {course.description || `Master essential ${course.category} concepts with industry-leading faculty.`}
+                </p>
 
-                {/* Session Details & Interactive Notes */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div className="glass-card rounded-[2.5rem] p-8">
-                     <h4 className="text-sm font-black text-white uppercase tracking-widest mb-6 flex items-center gap-2">
-                        <i className="fa-solid fa-list-check text-blue-500"></i>
-                        Session Milestones
-                     </h4>
-                     <div className="space-y-4">
-                        {selectedModule.tasks.map((t, i) => (
-                          <div key={i} className="flex items-center gap-3 text-sm text-slate-400">
-                             <div className="w-5 h-5 rounded-full bg-blue-600/10 flex items-center justify-center text-blue-500 text-[10px]">
-                                <i className="fa-solid fa-check"></i>
-                             </div>
-                             <span>{t}</span>
-                          </div>
-                        ))}
-                     </div>
-                  </div>
-
-                  <div className="glass-card rounded-[2.5rem] p-8 border-indigo-500/20">
-                     <h4 className="text-sm font-black text-white uppercase tracking-widest mb-6 flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                           <i className="fa-solid fa-note-sticky text-indigo-500"></i>
-                           Session Insights
-                        </div>
-                        <span className="text-[9px] px-2 py-0.5 bg-indigo-600/20 text-indigo-400 rounded">Verified</span>
-                     </h4>
-                     <div className="bg-black/20 p-6 rounded-2xl border border-white/5">
-                        <p className="text-xs font-mono text-slate-400 leading-relaxed whitespace-pre-wrap">
-                           {selectedModule.liveNotes || "Notes for this session are being transcribed..."}
-                        </p>
-                     </div>
-                  </div>
+                <div className="flex flex-wrap gap-2 mb-8">
+                  {course.skills.map(skill => (
+                    <span key={skill} className="px-2 py-1 bg-white/5 text-slate-500 text-[9px] font-bold rounded-lg border border-white/5">
+                      {skill}
+                    </span>
+                  ))}
                 </div>
               </div>
-            )}
-          </div>
+
+              <div className="space-y-3">
+                <a 
+                  href={course.link} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="w-full py-4 bg-white text-slate-950 rounded-2xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 hover:bg-indigo-50 transition-all shadow-xl"
+                >
+                  {course.type === 'Audit Free' ? 'Audit for Free' : 'Start Free Course'}
+                  <i className="fa-solid fa-arrow-up-right-from-square text-[8px]"></i>
+                </a>
+                <button 
+                  onClick={() => toggleComplete(course.id)}
+                  className={`w-full py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all border ${
+                    completedCourses.includes(course.id)
+                      ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
+                      : 'bg-white/5 border-white/10 text-slate-400 hover:bg-white/10'
+                  }`}
+                >
+                  {completedCourses.includes(course.id) ? 'Completed' : 'Mark as Completed'}
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Hub Footer */}
+        <div className="mt-24 p-12 glass-card rounded-[3.5rem] border-indigo-500/20 bg-indigo-600/5 text-center">
+           <i className="fa-solid fa-certificate text-4xl text-indigo-400 mb-6"></i>
+           <h3 className="text-3xl font-black text-white mb-4">Certification Eligibility</h3>
+           <p className="text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed text-lg">
+             Completing these foundational courses unlocks your ability to apply for advanced internship certificates. Your progress is synced to our recruitment portal.
+           </p>
+           <div className="flex flex-wrap justify-center gap-6">
+              <div className="flex flex-col items-center">
+                <span className="text-2xl font-black text-white">{completedCourses.length}</span>
+                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Completed</span>
+              </div>
+              <div className="w-px h-10 bg-white/10 hidden sm:block"></div>
+              <div className="flex flex-col items-center">
+                <span className="text-2xl font-black text-white">{courses.length}</span>
+                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Available</span>
+              </div>
+           </div>
         </div>
       </div>
     </section>
