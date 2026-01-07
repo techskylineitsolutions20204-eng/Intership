@@ -11,7 +11,7 @@ const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
 
   const TRAINING_CATEGORIES = [
     {
-      title: 'AI & Intelligence',
+      title: 'AI & Data Intelligence',
       items: [
         { name: 'AI with Data Science', icon: 'fa-brain' },
         { name: 'Foundation of AI', icon: 'fa-atom' },
@@ -20,38 +20,37 @@ const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
       ]
     },
     {
-      title: 'Cloud & Infrastructure',
+      title: 'Cloud & Cyber Security',
       items: [
-        { name: 'AWS', icon: 'fa-brands fa-aws' },
+        { name: 'AWS Cloud Architecture', icon: 'fa-brands fa-aws' },
         { name: 'Azure DevOps', icon: 'fa-infinity' },
         { name: 'Google Cloud Security', icon: 'fa-shield-halved' },
-        { name: 'Edge 5G', icon: 'fa-tower-broadcast' }
+        { name: 'Cyber Security Ops', icon: 'fa-user-secret' }
       ]
     },
     {
-      title: 'Enterprise Solutions',
+      title: 'SAP & Enterprise ERP',
       items: [
-        { name: 'SAP S/4HANA (H4 Hana)', icon: 'fa-database' },
-        { name: 'SAP Ariba', icon: 'fa-cart-shopping' },
-        { name: 'SAP IBP & OBP', icon: 'fa-chart-line' },
-        { name: 'Workday HCM', icon: 'fa-users-gear' },
+        { name: 'Sap H4 Hana (S/4HANA)', icon: 'fa-database' },
+        { name: 'Sap Ariba Procurement', icon: 'fa-cart-shopping' },
+        { name: 'Sap IBP & Sap OBP', icon: 'fa-chart-line' },
+        { name: 'Workday HCM', icon: 'fa-users-gear' }
+      ]
+    },
+    {
+      title: 'Oracle & Project Control',
+      items: [
         { name: 'Oracle Primavera Unifier', icon: 'fa-diagram-project' },
-        { name: 'Oracle P6', icon: 'fa-calendar-check' }
+        { name: 'Oracle P6 Professional', icon: 'fa-calendar-check' },
+        { name: 'Tableau Analytics', icon: 'fa-chart-pie' },
+        { name: 'Power BI Reporting', icon: 'fa-chart-bar' }
       ]
     },
     {
-      title: 'Data & Security',
+      title: 'Emerging Tech & Mgmt',
       items: [
-        { name: 'Cyber Security', icon: 'fa-user-secret' },
-        { name: 'Power BI', icon: 'fa-chart-bar' },
-        { name: 'Tableau', icon: 'fa-chart-pie' },
+        { name: 'IOT & Edge 5G', icon: 'fa-tower-broadcast' },
         { name: 'RPA & Robotics', icon: 'fa-gears' },
-        { name: 'IOT Systems', icon: 'fa-house-signal' }
-      ]
-    },
-    {
-      title: 'Management & Agile',
-      items: [
         { name: 'Scrum Master', icon: 'fa-person-running' },
         { name: 'Product Management', icon: 'fa-box-open' }
       ]
@@ -60,11 +59,10 @@ const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
 
   const navItems = [
     { id: 'home', label: 'Home' },
-    { id: 'tech', label: 'Tech' },
+    { id: 'tech', label: 'Tech Matrix' },
     { id: 'career', label: 'Career AI' },
-    { id: 'self-learning', label: 'Academy' },
     { id: 'labs', label: 'Live Labs' },
-    { id: 'register', label: 'Intake 2026' },
+    { id: 'register', label: 'Apply' },
   ];
 
   return (
@@ -86,9 +84,9 @@ const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
-                className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
+                className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
                   activeTab === item.id 
-                    ? 'text-white bg-white/5 shadow-inner' 
+                    ? 'text-white bg-white/5 shadow-inner border border-white/10' 
                     : 'text-slate-500 hover:text-white hover:bg-white/5'
                 }`}
               >
@@ -96,7 +94,7 @@ const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
               </button>
             ))}
             
-            <div className="relative ml-4 pl-4 border-l border-white/10">
+            <div className="relative ml-4 pl-4 border-l border-white/10 group">
                <button 
                  onMouseEnter={() => setShowTrainings(true)}
                  className="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] text-indigo-400 flex items-center gap-2 hover:bg-indigo-600/10 transition-all"
@@ -108,22 +106,22 @@ const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
                {showTrainings && (
                  <div 
                    onMouseLeave={() => setShowTrainings(false)}
-                   className="absolute top-full right-[-100px] mt-2 w-[800px] bg-slate-900 border border-white/10 rounded-3xl p-8 shadow-2xl shadow-black/50 animate-fade-in-up grid grid-cols-3 gap-8"
+                   className="absolute top-full right-[-150px] mt-2 w-[900px] bg-slate-900 border border-white/10 rounded-3xl p-8 shadow-2xl shadow-black/50 animate-fade-in-up grid grid-cols-5 gap-6"
                  >
-                    <div className="col-span-3 border-b border-white/5 pb-4 mb-2 flex items-center justify-between">
-                       <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Industry Mastery Nodes v2026</span>
-                       <span className="text-[9px] bg-indigo-600/20 text-indigo-400 px-2 py-0.5 rounded font-black uppercase tracking-widest">Verified Curriculums</span>
+                    <div className="col-span-5 border-b border-white/5 pb-4 mb-2 flex items-center justify-between">
+                       <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Global Training Nodes v2026</span>
+                       <span className="text-[9px] bg-indigo-600/20 text-indigo-400 px-2 py-0.5 rounded font-black uppercase tracking-widest">Industry Verified</span>
                     </div>
                     {TRAINING_CATEGORIES.map(category => (
                       <div key={category.title} className="space-y-3">
-                         <h4 className="text-[10px] font-black text-indigo-500/80 uppercase tracking-widest">{category.title}</h4>
+                         <h4 className="text-[9px] font-black text-indigo-500 uppercase tracking-widest border-b border-indigo-500/10 pb-2">{category.title}</h4>
                          <div className="space-y-1">
                            {category.items.map(item => (
-                             <div key={item.name} className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 transition-colors cursor-pointer group">
-                                <div className="w-6 h-6 rounded bg-white/5 flex items-center justify-center group-hover:bg-indigo-600 transition-colors">
-                                   <i className={`fa-solid ${item.icon} text-[10px] text-slate-400 group-hover:text-white`}></i>
+                             <div key={item.name} className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 transition-colors cursor-pointer group/item">
+                                <div className="w-6 h-6 rounded bg-white/5 flex items-center justify-center group-hover/item:bg-indigo-600 transition-colors">
+                                   <i className={`fa-solid ${item.icon} text-[10px] text-slate-400 group-hover/item:text-white`}></i>
                                 </div>
-                                <span className="text-[11px] font-bold text-slate-400 group-hover:text-white transition-colors">{item.name}</span>
+                                <span className="text-[10px] font-bold text-slate-400 group-hover/item:text-white transition-colors">{item.name}</span>
                              </div>
                            ))}
                          </div>

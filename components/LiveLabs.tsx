@@ -12,6 +12,8 @@ interface LabInstance {
   icon: string;
   latency?: string;
   uptime?: string;
+  embedId?: string; // For recorded walkthroughs
+  tasks: string[];
 }
 
 interface MentorMessage {
@@ -21,76 +23,92 @@ interface MentorMessage {
   timestamp: string;
 }
 
-interface SavedSession {
-  id: string;
-  labName: string;
-  timestamp: string;
-  logs: string[];
-  notes: string;
-}
-
 const LiveLabs: React.FC = () => {
   const [labs, setLabs] = useState<LabInstance[]>([
     {
-      id: 'gen-ai-sandbox',
-      name: "Generative AI Sandbox",
-      type: "NVIDIA Tesla A100 Instance",
+      id: 'sap-h4-hana',
+      name: "Sap H4 Hana Cloud Hub",
+      type: "High-Performance ERP Practice",
       status: 'offline',
-      tools: ['PyTorch', 'HuggingFace', 'LangChain', 'VectorDB'],
-      specs: "80GB VRAM / 64GB RAM",
-      icon: "fa-brain",
+      tools: ['S/4HANA', 'ABAP Cloud', 'Fiori', 'HANA DB'],
+      specs: "256GB RAM / 128 vCPU / Dedicated VM",
+      icon: "fa-database",
       latency: "0ms",
-      uptime: "0%"
+      uptime: "0%",
+      embedId: "wS9S_O908yU",
+      tasks: [
+        "Initialize S/4HANA Instance",
+        "Verify Fiori App Deployment",
+        "Audit ABAP Cloud Logs",
+        "Validate HANA DB Memory Segments"
+      ]
     },
     {
-      id: 'fullstack-node',
-      name: "Full Stack Node.js Node",
-      type: "Ubuntu 22.04 LTS Container",
+      id: 'oracle-p6-unifier',
+      name: "Oracle P6 & Unifier Node",
+      type: "Project Controls Mastery",
       status: 'offline',
-      tools: ['Node.js', 'React 19', 'PostgreSQL', 'Redis'],
-      specs: "4 vCPU / 8GB RAM",
-      icon: "fa-layer-group",
+      tools: ['Oracle P6', 'Primavera Unifier', 'BI Publisher'],
+      specs: "Windows Server 2022 / Enterprise Access",
+      icon: "fa-calendar-check",
       latency: "0ms",
-      uptime: "0%"
+      uptime: "0%",
+      embedId: "i_LwzRVP7bg",
+      tasks: [
+        "Establish Baseline Project Plan",
+        "Sync Unifier Business Processes",
+        "Generate Global Resource Report",
+        "Export Primavera XML Template"
+      ]
     },
     {
-      id: 'devsecops-pipeline',
-      name: "DevSecOps Automation Lab",
-      type: "Kubernetes Cluster Node",
+      id: 'ai-ds-automation',
+      name: "AI & Data Science Suite",
+      type: "Advanced Automation Cluster",
       status: 'offline',
-      tools: ['Docker', 'Terraform', 'Jenkins', 'SonarQube'],
-      specs: "Shared K8s Cluster",
+      tools: ['Python', 'TensorFlow', 'RPA Tools', 'Power BI'],
+      specs: "NVIDIA A100 GPU / 80GB VRAM",
+      icon: "fa-robot",
+      latency: "0ms",
+      uptime: "0%",
+      embedId: "5sLYA48vW3U",
+      tasks: [
+        "Train Neural Automation Script",
+        "Configure RPA Workflow Orchestrator",
+        "Design Power BI Data Pipeline",
+        "Deploy Python Model to Edge 5G"
+      ]
+    },
+    {
+      id: 'cyber-sec-devops',
+      name: "Cyber Security & DevOps Lab",
+      type: "DevSecOps Infrastructure",
+      status: 'offline',
+      tools: ['AWS', 'Azure', 'Kubernetes', 'Kali'],
+      specs: "Hardened Container Hub",
       icon: "fa-shield-halved",
       latency: "0ms",
-      uptime: "0%"
-    },
-    {
-      id: 'data-science-env',
-      name: "Data Intelligence Hub",
-      type: "Jupyter Enterprise Node",
-      status: 'offline',
-      tools: ['Pandas', 'Spark', 'TensorFlow', 'Tableau SDK'],
-      specs: "Memory Optimized Instance",
-      icon: "fa-chart-pie",
-      latency: "0ms",
-      uptime: "0%"
+      uptime: "0%",
+      embedId: "q6f_N7J-ZWA",
+      tasks: [
+        "Audit AWS IAM Roles",
+        "Setup Azure DevOps CI/CD Tunnel",
+        "Penetrate Isolated Staging Node",
+        "Hardening K8s Network Policies"
+      ]
     }
   ]);
 
   const [activeLab, setActiveLab] = useState<LabInstance | null>(null);
-  const [labStatus, setLabStatus] = useState<'idle' | 'loading' | 'active' | 'reviewing'>('idle');
-  const [reviewSession, setReviewSession] = useState<SavedSession | null>(null);
+  const [labMode, setLabMode] = useState<'live' | 'recorded' | 'idle'>('idle');
+  const [labStatus, setLabStatus] = useState<'idle' | 'loading' | 'active'>('idle');
   const [terminalLogs, setTerminalLogs] = useState<string[]>([]);
   const [bootProgress, setBootProgress] = useState(0);
   const [mentorMessages, setMentorMessages] = useState<MentorMessage[]>([]);
   const [sessionNotes, setSessionNotes] = useState<string>("");
-  const [isRecording, setIsRecording] = useState(false);
-  const [recordingStatus, setRecordingStatus] = useState<'idle' | 'recording' | 'saved'>('idle');
   const [isSyncing, setIsSyncing] = useState(false);
-  const [savedSessions, setSavedSessions] = useState<SavedSession[]>([]);
-  const [showExitModal, setShowExitModal] = useState(false);
-  const [isSummarizing, setIsSummarizing] = useState(false);
   const [globalUptime, setGlobalUptime] = useState("99.98%");
+  const [completedTasks, setCompletedTasks] = useState<string[]>([]);
   
   const terminalInputRef = useRef<HTMLInputElement>(null);
   const terminalEndRef = useRef<HTMLDivElement>(null);
@@ -103,12 +121,8 @@ const LiveLabs: React.FC = () => {
   const fetchRealTimeStatus = useCallback(async () => {
     if (isSyncing) return;
     setIsSyncing(true);
-    
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    const labIds = labs.map(l => l.id);
-    
-    const prompt = `Act as an Infrastructure Health Monitor. Return JSON statuses for: ${labIds.join(', ')}. Include latency and uptime. Mostly online.`;
-
+    const prompt = `Act as an Infra Monitor. Returns JSON statuses (online, offline, provisioning), latency, uptime for: ${labs.map(l => l.id).join(', ')}.`;
     try {
       const response = await ai.models.generateContent({
         model: "gemini-3-flash-preview",
@@ -127,261 +141,205 @@ const LiveLabs: React.FC = () => {
                     status: { type: Type.STRING },
                     latency: { type: Type.STRING },
                     uptime: { type: Type.STRING }
-                  },
-                  required: ["id", "status", "latency", "uptime"]
+                  }
                 }
-              },
-              overallHealth: { type: Type.STRING }
-            },
-            required: ["statuses", "overallHealth"]
+              }
+            }
           }
         }
       });
-
       const data = JSON.parse(response.text || "{}");
       if (data.statuses) {
-        setLabs(currentLabs => currentLabs.map(lab => {
+        setLabs(current => current.map(lab => {
           if (activeLab?.id === lab.id) return lab;
           const update = data.statuses.find((s: any) => s.id === lab.id);
-          if (update) return { ...lab, status: update.status as any, latency: update.latency, uptime: update.uptime };
-          return lab;
+          return update ? { ...lab, ...update } : lab;
         }));
-        setGlobalUptime(data.overallHealth || "99.99%");
       }
-    } catch (error) {
-      console.error("Health Monitor Sync Error:", error);
-    } finally {
-      setIsSyncing(false);
-    }
+    } catch (e) { console.error(e); } finally { setIsSyncing(false); }
   }, [activeLab, labs]);
 
   useEffect(() => {
     fetchRealTimeStatus();
-    const interval = setInterval(fetchRealTimeStatus, 30000);
-    const stored = localStorage.getItem('skyline_recorded_sessions');
-    if (stored) setSavedSessions(JSON.parse(stored));
+    const interval = setInterval(fetchRealTimeStatus, 25000);
     return () => clearInterval(interval);
   }, []);
 
-  const startLab = (lab: LabInstance) => {
-    setLabs(prev => prev.map(l => l.id === lab.id ? { ...l, status: 'provisioning' } : l));
+  const startLab = (lab: LabInstance, mode: 'live' | 'recorded') => {
     setActiveLab(lab);
-    setLabStatus('loading');
-    setBootProgress(0);
-    setRecordingStatus('idle');
-    setShowExitModal(false);
-    setTerminalLogs([
-      `[AUTH] Authenticating session for TechSkyline Node...`,
-      `[PROVISION] Requesting ${lab.type} resource...`,
-      `[NETWORK] Establishing secure gRPC tunnel...`
-    ]);
-
-    const interval = setInterval(() => {
-      setBootProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setLabStatus('active');
-          setTerminalLogs(logs => [...logs, `[SYSTEM] Instance [${lab.id}] is now ONLINE.`, `Practice session initialized.`]);
-          
-          setTimeout(() => {
-            setMentorMessages([
-              { 
-                id: '1', 
-                sender: 'Lead Architect', 
-                text: `Session active on ${lab.name}. Start auditing the local services.`, 
-                timestamp: new Date().toLocaleTimeString() 
-              }
-            ]);
-            setSessionNotes(`--- SESSION: ${lab.name} ---\nTIME: ${new Date().toLocaleString()}\nSPECS: ${lab.specs}\n\n[LOG START]\n1. Infrastructure audit complete.\n2. Service mesh connected.\n\nNOTES: `);
-          }, 1000);
-          
-          return 100;
-        }
-        return prev + 10;
-      });
-    }, 400);
-  };
-
-  const saveCurrentSession = () => {
-    const sessionData: SavedSession = {
-      id: `session_${Date.now()}`,
-      labName: activeLab?.name || 'Unknown Lab',
-      timestamp: new Date().toISOString(),
-      logs: terminalLogs,
-      notes: sessionNotes
-    };
+    setLabMode(mode);
+    setCompletedTasks([]);
     
-    const existingSessionsStr = localStorage.getItem('skyline_recorded_sessions');
-    const existingSessions = existingSessionsStr ? JSON.parse(existingSessionsStr) : [];
-    const updatedSessions = [...existingSessions, sessionData];
-    localStorage.setItem('skyline_recorded_sessions', JSON.stringify(updatedSessions));
-    setSavedSessions(updatedSessions);
-    return sessionData;
-  };
-
-  const closeLab = (save: boolean = false) => {
-    if (save) saveCurrentSession();
-    setLabStatus('idle');
-    setActiveLab(null);
-    setTerminalLogs([]);
-    setMentorMessages([]);
-    setSessionNotes("");
-    setIsRecording(false);
-    setShowExitModal(false);
-    fetchRealTimeStatus();
-  };
-
-  const handleTerminalCommand = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!terminalInputRef.current) return;
-    const cmd = terminalInputRef.current.value.trim();
-    if (!cmd) return;
-
-    setTerminalLogs(prev => [...prev, `root@skyline:~# ${cmd}`]);
-    terminalInputRef.current.value = '';
-
-    setTimeout(() => {
-      let response = `Command '${cmd}' completed successfully.`;
-      if (cmd === 'ls') response = `bin/  etc/  projects/  scripts/  var/`;
-      if (cmd === 'neofetch') response = `OS: TechSkyline OS v2026\nKernel: 6.8.0-skyline-pro\nShell: zsh 5.9\nCPU: AMD EPYC 7763 (16) @ 3.500GHz\nMemory: 2.4GiB / 64GiB`;
-      setTerminalLogs(prev => [...prev, response]);
-    }, 300);
-  };
-
-  const addTimestamp = () => {
-    const ts = `\n[${new Date().toLocaleTimeString()}] `;
-    setSessionNotes(prev => prev + ts);
-    setTimeout(() => notesRef.current?.focus(), 10);
-  };
-
-  const generateAISummary = async () => {
-    if (isSummarizing || terminalLogs.length < 5) return;
-    setIsSummarizing(true);
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    const prompt = `Summarize these terminal activities into technical session notes: \n\n${terminalLogs.slice(-20).join('\n')}`;
-    try {
-      const response = await ai.models.generateContent({
-        model: 'gemini-3-flash-preview',
-        contents: prompt
-      });
-      const summary = response.text || "AI analysis failed.";
-      setSessionNotes(prev => prev + `\n\n--- AI AUTO-SUMMARY ---\n${summary}\n`);
-    } catch (error) {
-      console.error("AI Summary Error:", error);
-    } finally {
-      setIsSummarizing(false);
+    if (mode === 'live') {
+      setLabStatus('loading');
+      setBootProgress(0);
+      setTerminalLogs([`[AUTH] Authenticating...`, `[PROVISION] Requesting ${lab.specs}...`]);
+      const interval = setInterval(() => {
+        setBootProgress(prev => {
+          if (prev >= 100) {
+            clearInterval(interval);
+            setLabStatus('active');
+            setTerminalLogs(logs => [...logs, `[SYSTEM] Instance ONLINE. Ready for ${lab.name} practice.`]);
+            setSessionNotes(`--- ${lab.name} LIVE NOTES ---\n\nOBJECTIVES:\n${lab.tasks.map(t => `- [ ] ${t}`).join('\n')}\n\nTECHNICAL NOTES:\n`);
+            return 100;
+          }
+          return prev + 10;
+        });
+      }, 300);
+    } else {
+      setLabStatus('active');
     }
   };
 
-  if (labStatus === 'active' && activeLab) {
+  const closeLab = () => {
+    setLabStatus('idle');
+    setActiveLab(null);
+    setLabMode('idle');
+    setTerminalLogs([]);
+    setMentorMessages([]);
+  };
+
+  const toggleTask = (task: string) => {
+    setCompletedTasks(prev => prev.includes(task) ? prev.filter(t => t !== task) : [...prev, task]);
+    setTerminalLogs(prev => [...prev, `[USER] Task Completed: ${task}`]);
+  };
+
+  const handleCommand = (e: React.FormEvent) => {
+    e.preventDefault();
+    const cmd = terminalInputRef.current?.value.trim();
+    if (!cmd) return;
+    setTerminalLogs(prev => [...prev, `root@skyline:~# ${cmd}`]);
+    if (terminalInputRef.current) terminalInputRef.current.value = '';
+    
+    setTimeout(() => {
+      let resp = `Command '${cmd}' not found. Try 'ls' or 'status'.`;
+      if (cmd === 'ls') resp = `configs/  tasks.md  logs/  production/`;
+      if (cmd === 'status') resp = `ID: ${activeLab?.id}\nHEALTH: OPTIMAL\nUPTIME: 0h 12m\nNODES: 3`;
+      if (cmd === 'clear') { setTerminalLogs([]); return; }
+      setTerminalLogs(prev => [...prev, resp]);
+    }, 200);
+  };
+
+  if (labStatus === 'loading') {
     return (
-      <div className="fixed inset-0 z-[100] bg-slate-950 flex flex-col animate-fade-in-up">
-        {/* Lab Toolbar */}
-        <div className="h-14 bg-slate-900 border-b border-white/5 flex items-center justify-between px-6">
-          <div className="flex items-center gap-4">
-            <span className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse"></span>
-            <span className="text-xs font-black uppercase tracking-widest text-white">{activeLab.name} [LIVE]</span>
-          </div>
-          <div className="flex items-center gap-3">
-             <button onClick={() => setShowExitModal(true)} className="px-4 py-1.5 bg-red-600 hover:bg-red-700 text-white text-[10px] font-black uppercase tracking-widest rounded-lg transition-all">
-               Terminate Session
-             </button>
-          </div>
-        </div>
-
-        {showExitModal && (
-          <div className="fixed inset-0 z-[110] bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4">
-            <div className="glass-card rounded-[2.5rem] max-w-md w-full p-10 border-white/10 shadow-2xl">
-              <h3 className="text-2xl font-black text-white text-center mb-4 uppercase tracking-tight">End Session?</h3>
-              <p className="text-slate-400 text-center mb-8">Save your interactive notes and terminal logs to the Hub?</p>
-              <div className="flex flex-col gap-3">
-                <button onClick={() => closeLab(true)} className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-black uppercase tracking-widest text-xs transition-all flex items-center justify-center gap-2">
-                  <i className="fa-solid fa-cloud-arrow-up"></i> Save & Exit
-                </button>
-                <button onClick={() => closeLab(false)} className="w-full py-4 bg-white/5 text-slate-400 rounded-xl font-black uppercase tracking-widest text-xs transition-all border border-white/5">
-                  Discard & Exit
-                </button>
-                <button onClick={() => setShowExitModal(false)} className="w-full py-3 text-slate-600 hover:text-white transition-colors text-[10px] font-black uppercase tracking-widest">
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        <div className="flex-grow flex overflow-hidden">
-          {/* Notes & Mentor Sidebar */}
-          <div className="w-96 bg-slate-900 border-r border-white/5 flex flex-col">
-             <div className="flex-grow flex flex-col">
-                <div className="p-4 border-b border-white/5 flex items-center justify-between bg-slate-950/50">
-                   <h3 className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Interactive Session Notes</h3>
-                   <div className="flex gap-2">
-                      <button onClick={addTimestamp} className="w-6 h-6 rounded bg-white/5 flex items-center justify-center text-[10px] text-slate-400 hover:text-white hover:bg-indigo-600 transition-all">
-                         <i className="fa-solid fa-clock"></i>
-                      </button>
-                      <button onClick={generateAISummary} disabled={isSummarizing} className={`w-6 h-6 rounded bg-white/5 flex items-center justify-center text-[10px] transition-all ${isSummarizing ? 'text-indigo-400 animate-spin' : 'text-slate-400 hover:text-white hover:bg-indigo-600'}`}>
-                         <i className="fa-solid fa-wand-sparkles"></i>
-                      </button>
-                   </div>
-                </div>
-                {/* FULLY EDITABLE TEXTAREA */}
-                <textarea 
-                  ref={notesRef} 
-                  className="flex-grow w-full bg-slate-950 border-none outline-none p-6 text-[12px] font-mono text-emerald-500/90 resize-none leading-relaxed placeholder:text-slate-800" 
-                  value={sessionNotes} 
-                  onChange={(e) => setSessionNotes(e.target.value)} 
-                  placeholder="Record your observations here. Notes are saved automatically to your profile upon termination." 
-                />
-             </div>
-             <div className="h-48 border-t border-white/5 p-4 overflow-y-auto bg-black/20">
-                <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2 block">Live Intelligence Feed</span>
-                {mentorMessages.map(msg => (
-                  <div key={msg.id} className="text-[11px] text-slate-400 mb-2 p-2 bg-white/5 rounded border border-white/5">
-                    <span className="text-indigo-400 font-bold mr-2">[{msg.sender}]:</span> {msg.text}
-                  </div>
-                ))}
-             </div>
-          </div>
-
-          {/* IDE & Terminal */}
-          <div className="flex-grow flex flex-col">
-            <div className="flex-grow bg-[#1a1a1a] p-10 font-mono text-xs overflow-auto">
-               <div className="text-slate-500 mb-4 border-b border-white/5 pb-2 uppercase tracking-widest">Main Workspace</div>
-               <div className="text-blue-400">import</div> <span className="text-indigo-300">LabInstance</span> <span className="text-blue-400">from</span> <span className="text-emerald-400">'@skyline/infra'</span>;
-               <br/><br/>
-               <span className="text-purple-400">const</span> <span className="text-yellow-300">LiveEnvironment</span> = () =&gt; &#123;
-               <br/>&nbsp;&nbsp;<span className="text-slate-500">// Interactive training node active</span>
-               <br/>&nbsp;&nbsp;<span className="text-blue-400">return</span> (
-               <br/>&nbsp;&nbsp;&nbsp;&nbsp;&lt;<span className="text-red-400">Environment</span> <span className="text-amber-300">id</span>=<span className="text-emerald-400">"{activeLab.id}"</span> /&gt;
-               <br/>&nbsp;&nbsp;);
-               <br/>&#125;;
-            </div>
-            <div className="h-64 bg-black border-t border-white/10 flex flex-col">
-               <div className="flex-grow p-4 font-mono text-[11px] overflow-y-auto space-y-1">
-                  {terminalLogs.map((log, i) => (
-                    <div key={i} className="text-slate-300">
-                      {log.startsWith('root@skyline') ? <span className="text-emerald-500 font-bold">{log}</span> : log}
-                    </div>
-                  ))}
-                  <form onSubmit={handleTerminalCommand} className="flex items-center">
-                    <span className="text-emerald-500 font-bold mr-2">root@skyline:~#</span>
-                    <input ref={terminalInputRef} className="bg-transparent border-none outline-none text-white w-full" autoFocus />
-                  </form>
-                  <div ref={terminalEndRef} />
-               </div>
-            </div>
-          </div>
-        </div>
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-8 animate-fade-in-up">
+        <div className="w-16 h-16 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mb-8"></div>
+        <h2 className="text-3xl font-black text-white mb-2 uppercase tracking-tight">Provisioning Hardware</h2>
+        <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">Heartbeat: {bootProgress}%</p>
       </div>
     );
   }
 
-  if (labStatus === 'loading') {
+  if (labStatus === 'active' && activeLab) {
     return (
-      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-8">
-        <div className="w-16 h-16 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mb-8"></div>
-        <h2 className="text-2xl font-black text-white mb-2 uppercase tracking-widest">Provisioning Environment</h2>
-        <p className="text-slate-500 font-bold uppercase tracking-widest text-[10px]">Heartbeat Pulse: {bootProgress}%</p>
+      <div className="fixed inset-0 z-[100] bg-slate-950 flex flex-col">
+        {/* Header */}
+        <div className="h-16 bg-slate-900 border-b border-white/5 flex items-center justify-between px-8">
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-2">
+              <span className={`w-2 h-2 rounded-full ${labMode === 'live' ? 'bg-emerald-500 animate-pulse shadow-[0_0_10px_emerald]' : 'bg-indigo-500'}`}></span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-white">{activeLab.name} - {labMode === 'live' ? 'LIVE LAB' : 'EXPERT RECORDING'}</span>
+            </div>
+          </div>
+          <button onClick={closeLab} className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all">
+            Exit Session
+          </button>
+        </div>
+
+        <div className="flex-grow flex overflow-hidden">
+          {/* Left Panel: Tasks & Notes */}
+          <div className="w-96 bg-slate-900 border-r border-white/5 flex flex-col overflow-hidden">
+             <div className="p-6 border-b border-white/5 flex-shrink-0">
+                <h3 className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-4">Lab Manual & Tasks</h3>
+                <div className="space-y-3">
+                  {activeLab.tasks.map(task => (
+                    <button 
+                      key={task} 
+                      onClick={() => toggleTask(task)}
+                      className={`w-full text-left p-3 rounded-xl border text-[11px] font-bold transition-all flex items-center gap-3 ${
+                        completedTasks.includes(task) ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-white/5 border-white/5 text-slate-400 hover:bg-white/10'
+                      }`}
+                    >
+                      <i className={`fa-solid ${completedTasks.includes(task) ? 'fa-check-circle' : 'fa-circle-notch text-slate-700'}`}></i>
+                      {task}
+                    </button>
+                  ))}
+                </div>
+             </div>
+             <div className="flex-grow flex flex-col p-6 min-h-0">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Live Interactive Notes</h3>
+                  <span className="text-[8px] bg-emerald-500/20 text-emerald-500 px-2 py-0.5 rounded font-black uppercase">Auto-Syncing</span>
+                </div>
+                <textarea 
+                  value={sessionNotes} 
+                  onChange={(e) => setSessionNotes(e.target.value)}
+                  className="flex-grow w-full bg-slate-950 border border-white/5 rounded-2xl p-4 text-xs font-mono text-emerald-500/80 outline-none resize-none leading-relaxed" 
+                  placeholder="Record observations, configs, or technical findings here..."
+                />
+             </div>
+          </div>
+
+          {/* Center Content: IDE/Video */}
+          <div className="flex-grow flex flex-col bg-[#1e1e1e]">
+             <div className="flex-grow overflow-auto relative">
+                {labMode === 'recorded' ? (
+                  <div className="w-full h-full bg-black">
+                    <iframe 
+                      className="w-full h-full" 
+                      src={`https://www.youtube.com/embed/${activeLab.embedId}?autoplay=1&modestbranding=1`} 
+                      frameBorder="0" 
+                      allow="autoplay; encrypted-media" 
+                      allowFullScreen 
+                    />
+                  </div>
+                ) : (
+                  <div className="p-10 font-mono text-[13px] leading-7">
+                    <div className="text-slate-600 mb-6 border-b border-white/5 pb-2 uppercase tracking-widest text-[10px]">Production Workspace - {activeLab.id}</div>
+                    <span className="text-blue-400"># Cloud Infrastructure for {activeLab.name}</span><br/>
+                    <span className="text-purple-400">module</span> <span className="text-yellow-300">SkylineNetwork</span> &#123;<br/>
+                    &nbsp;&nbsp;<span className="text-blue-400">def</span> <span className="text-emerald-400">initialize_env</span>() &#123;<br/>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span className="text-slate-500">// Deploying tools: {activeLab.tools.join(', ')}</span><br/>
+                    &nbsp;&nbsp;&nbsp;&nbsp;verify_hardware(specs: <span className="text-amber-300">"{activeLab.specs}"</span>)<br/>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span className="text-blue-400">return</span> <span className="text-emerald-500">"STABLE"</span><br/>
+                    &nbsp;&nbsp;&#125;<br/>
+                    &#125;
+                    <br/><br/>
+                    <div className="mt-8 p-6 bg-emerald-500/5 border border-emerald-500/10 rounded-2xl text-emerald-400">
+                      <i className="fa-solid fa-circle-info mr-2"></i>
+                      Environment is healthy. Proceed with task audit.
+                    </div>
+                  </div>
+                )}
+             </div>
+
+             {/* Terminal Footer */}
+             {labMode === 'live' && (
+               <div className="h-64 bg-black border-t border-white/10 flex flex-col">
+                 <div className="h-8 bg-slate-900 flex items-center px-4 justify-between">
+                    <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Skyline Interactive Shell v2026</span>
+                    <div className="flex gap-2">
+                       <span className="w-2 h-2 rounded-full bg-red-500"></span>
+                       <span className="w-2 h-2 rounded-full bg-yellow-500"></span>
+                       <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                    </div>
+                 </div>
+                 <div className="flex-grow p-4 font-mono text-[11px] overflow-y-auto space-y-1">
+                    {terminalLogs.map((l, i) => (
+                      <div key={i} className="text-slate-300">
+                        {l.startsWith('root@skyline') ? <span className="text-emerald-500 font-bold">{l}</span> : l}
+                      </div>
+                    ))}
+                    <form onSubmit={handleCommand} className="flex items-center">
+                       <span className="text-emerald-500 font-bold mr-2">root@skyline:~#</span>
+                       <input ref={terminalInputRef} className="bg-transparent border-none outline-none text-white w-full" autoFocus />
+                    </form>
+                    <div ref={terminalEndRef} />
+                 </div>
+               </div>
+             )}
+          </div>
+        </div>
       </div>
     );
   }
@@ -391,59 +349,82 @@ const LiveLabs: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-8">
           <div>
-            <span className="text-emerald-400 font-black uppercase tracking-[0.3em] text-[10px] mb-4 block">Hardware Synthesis</span>
-            <h2 className="text-5xl font-black text-white mb-6">Interactive <span className="text-indigo-500">Practice Nodes</span></h2>
-            <p className="text-slate-400 max-w-2xl text-lg">Deploy into dedicated enterprise environments. All session notes are synced to your intern transcript automatically.</p>
+            <span className="text-indigo-400 font-black uppercase tracking-[0.3em] text-[10px] mb-4 block">Interactive Mastery Suite</span>
+            <h2 className="text-5xl font-black text-white mb-6">Live <span className="text-indigo-500">Practice Nodes</span></h2>
+            <p className="text-slate-400 max-w-2xl text-lg">Launch dedicated environments for enterprise training. Choose between a live interactive node or follow an expert walkthrough recording.</p>
           </div>
-          <div className="glass-card px-8 py-4 rounded-2xl flex items-center gap-6 border-white/5">
-            <div className="flex flex-col">
-              <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Global Uptime</span>
-              <span className="text-lg font-black text-white">{globalUptime}</span>
-            </div>
-            <div className="w-px h-10 bg-white/10"></div>
-            <div className="flex items-center gap-3">
-              <span className={`w-2 h-2 rounded-full ${isSyncing ? 'bg-indigo-500 animate-pulse' : 'bg-emerald-500'}`}></span>
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Live Pulse</span>
-            </div>
+          <div className="glass-card px-8 py-5 rounded-[2.5rem] flex items-center gap-8 border-white/5">
+             <div className="flex flex-col">
+               <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Infrastructure Status</span>
+               <span className="text-lg font-black text-white">{globalUptime} Uptime</span>
+             </div>
+             <div className="w-px h-10 bg-white/10"></div>
+             <div className="flex items-center gap-3">
+               <span className={`w-2 h-2 rounded-full ${isSyncing ? 'bg-indigo-500 animate-pulse' : 'bg-emerald-500 shadow-[0_0_10px_emerald]'}`}></span>
+               <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{isSyncing ? 'Syncing...' : 'Live Monitoring'}</span>
+             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {labs.map((lab) => (
-            <div key={lab.id} className="glass-card rounded-[2.5rem] p-10 border-white/5 flex flex-col justify-between hover:border-indigo-500/30 transition-all group">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+          {labs.map(lab => (
+            <div key={lab.id} className="glass-card rounded-[3rem] p-10 border-white/5 hover:border-indigo-500/30 transition-all group flex flex-col justify-between h-full">
               <div>
                 <div className="flex justify-between items-start mb-8">
-                  <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center text-2xl text-white border border-white/10 group-hover:border-indigo-500/50 group-hover:scale-105 transition-all">
+                  <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center text-2xl text-white border border-white/10 group-hover:border-indigo-500/50 transition-all">
                     <i className={`fa-solid ${lab.icon}`}></i>
                   </div>
                   <div className="flex flex-col items-end gap-2">
-                    <span className={`px-3 py-1 bg-white/5 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-2 ${
-                      lab.status === 'online' ? 'text-emerald-400' : 'text-slate-500'
+                    <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest flex items-center gap-2 border ${
+                      lab.status === 'online' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-slate-500/10 border-slate-500/20 text-slate-400'
                     }`}>
                       <span className={`w-1.5 h-1.5 rounded-full ${lab.status === 'online' ? 'bg-emerald-500' : 'bg-slate-600'}`}></span>
                       {lab.status === 'online' ? 'Available' : 'Maintenance'}
                     </span>
-                    <span className="text-[8px] font-bold text-slate-600 uppercase tracking-widest">Lat: {lab.latency}</span>
+                    <span className="text-[8px] font-bold text-slate-600 uppercase">Uptime: {lab.uptime}</span>
                   </div>
                 </div>
-                <h3 className="text-2xl font-black text-white mb-2">{lab.name}</h3>
-                <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mb-6">{lab.type}</p>
+                <h3 className="text-3xl font-black text-white mb-2">{lab.name}</h3>
+                <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.2em] mb-6">{lab.type}</p>
+                
                 <div className="flex flex-wrap gap-2 mb-10">
                   {lab.tools.map(tool => (
-                    <span key={tool} className="px-3 py-1 bg-indigo-600/10 text-indigo-400 text-[9px] font-black uppercase tracking-widest rounded-lg border border-indigo-500/10">{tool}</span>
+                    <span key={tool} className="px-3 py-1 bg-white/5 text-slate-400 text-[9px] font-black uppercase tracking-widest rounded-lg border border-white/5">{tool}</span>
                   ))}
                 </div>
               </div>
-              <button 
-                onClick={() => startLab(lab)}
-                disabled={lab.status !== 'online'}
-                className="w-full py-5 bg-white hover:bg-indigo-600 text-slate-950 hover:text-white rounded-[2rem] font-black uppercase tracking-[0.2em] text-xs transition-all disabled:opacity-30 flex items-center justify-center gap-3"
-              >
-                Launch Learning Node
-                <i className="fa-solid fa-play text-[10px]"></i>
-              </button>
+
+              <div className="grid grid-cols-2 gap-4">
+                <button 
+                  onClick={() => startLab(lab, 'live')}
+                  disabled={lab.status !== 'online'}
+                  className="py-4 bg-white hover:bg-indigo-600 text-slate-950 hover:text-white rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all flex items-center justify-center gap-2 disabled:opacity-30"
+                >
+                  <i className="fa-solid fa-terminal text-[10px]"></i> Launch Live
+                </button>
+                <button 
+                  onClick={() => startLab(lab, 'recorded')}
+                  className="py-4 bg-white/5 hover:bg-white/10 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all border border-white/10 flex items-center justify-center gap-2"
+                >
+                  <i className="fa-solid fa-play text-[10px]"></i> Watch Walkthrough
+                </button>
+              </div>
             </div>
           ))}
+        </div>
+
+        <div className="mt-24 p-12 glass-card rounded-[3rem] border-white/5 flex flex-col md:flex-row items-center justify-between gap-12 bg-indigo-600/5">
+           <div className="max-w-xl text-center md:text-left">
+              <h3 className="text-3xl font-black text-white mb-4 tracking-tight">Enterprise Level Skill Transcript</h3>
+              <p className="text-slate-400 leading-relaxed">Every task completed and note recorded in our live labs is synced to your final intern transcript. This data is shared with our hiring partners to verify your hands-on proficiency in critical domains like SAP, Oracle, and AI Infrastructure.</p>
+           </div>
+           <div className="flex flex-col items-center gap-4 bg-black/30 p-8 rounded-[2rem] border border-white/10">
+              <i className="fa-solid fa-certificate text-4xl text-indigo-400"></i>
+              <div className="text-center">
+                 <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1">Current Certification Path</span>
+                 <span className="text-sm font-bold text-white">Advanced Solutions Architect</span>
+              </div>
+           </div>
         </div>
       </div>
     </section>

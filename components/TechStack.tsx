@@ -10,52 +10,52 @@ const TechStack: React.FC<TechStackProps> = ({ onApply }) => {
 
   const techCategories = useMemo(() => [
     {
-      title: "AI & Data Science",
+      title: "AI & Intelligence",
       icon: "fa-robot",
       color: "from-purple-600 to-indigo-700",
-      skills: ["Foundation of AI", "Neural Networks", "Data Modeling", "AI Automation"],
+      skills: ["AI with Data Science", "Foundation of AI", "AI Automation", "Python Mastery"],
       difficulty: "Advanced",
       demand: "Critical"
     },
     {
-      title: "Enterprise Ecosystems (SAP)",
+      title: "SAP S/4HANA Ecosystem",
       icon: "fa-database",
       color: "from-blue-600 to-blue-800",
-      skills: ["SAP S/4HANA (H4 Hana)", "SAP IBP / OBP", "SAP Ariba", "ABAP Intelligence"],
+      skills: ["Sap H4 Hana", "Sap Ariba Procurement", "Sap IBP & OBP", "Enterprise Workflows"],
       difficulty: "Hard",
       demand: "High"
     },
     {
-      title: "Project Management (Oracle)",
+      title: "Oracle & Project Ctrl",
       icon: "fa-diagram-project",
       color: "from-red-600 to-rose-800",
-      skills: ["Oracle Primavera Unifier", "Oracle P6 Professional", "Workday HCM", "Resource Allocation"],
+      skills: ["Oracle Primavera Unifier", "Oracle P6 Professional", "Workday HCM", "Resource Mgmt"],
       difficulty: "Intermediate",
-      demand: "Steady"
+      demand: "Global"
+    },
+    {
+      title: "Infrastructure & Security",
+      icon: "fa-shield-halved",
+      color: "from-emerald-500 to-teal-700",
+      skills: ["AWS & Azure DevOps", "Google Cloud Security", "Cyber Security Ops", "Edge 5G"],
+      difficulty: "Hard",
+      demand: "High"
     },
     {
       title: "Automation & Robotics",
       icon: "fa-gears",
-      color: "from-emerald-500 to-teal-700",
-      skills: ["RPA Workflows", "Industrial Robotics", "IOT Integration", "Edge 5G Systems"],
-      difficulty: "Innovation",
-      demand: "Emerging"
-    },
-    {
-      title: "Cloud & DevSecOps",
-      icon: "fa-cloud-binary",
       color: "from-orange-500 to-red-600",
-      skills: ["AWS / Azure DevOps", "Google Cloud Security", "Terraform", "Zero Trust IAM"],
-      difficulty: "Hard",
+      skills: ["RPA Workflows", "Industrial Robotics", "IOT Integration", "Neural Control"],
+      difficulty: "Next-Gen",
       demand: "Extreme"
     },
     {
-      title: "Intelligence Tools",
+      title: "Strategic Analytics",
       icon: "fa-chart-line",
       color: "from-amber-500 to-orange-600",
-      skills: ["Power BI", "Tableau", "SQL Analytics", "Predictive Reporting"],
+      skills: ["Power BI Analytics", "Tableau Reporting", "Scrum Master", "Product Mgmt"],
       difficulty: "Standard",
-      demand: "High"
+      demand: "Critical"
     }
   ], []);
 
@@ -81,7 +81,7 @@ const TechStack: React.FC<TechStackProps> = ({ onApply }) => {
               type="text" 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search SAP, Oracle, AI, RPA..."
+              placeholder="Search SAP, Oracle, AI, Cyber..."
               className="w-full pl-16 pr-8 py-5 bg-white/5 border border-white/10 rounded-[2rem] focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all text-white text-lg placeholder:text-slate-600"
             />
             <div className="absolute inset-y-0 left-6 flex items-center pointer-events-none">
@@ -105,9 +105,12 @@ const TechStack: React.FC<TechStackProps> = ({ onApply }) => {
                   </div>
                 ))}
               </div>
-              <button onClick={onApply} className="w-full py-4 bg-white/5 hover:bg-white text-white hover:text-slate-950 border border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all">
-                Enroll in Track
-              </button>
+              <div className="flex items-center justify-between pt-6 border-t border-white/5">
+                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{cat.demand} Demand</span>
+                <button onClick={onApply} className="text-[10px] font-black uppercase tracking-widest text-indigo-400 hover:text-white transition-colors">
+                  View Roadmap <i className="fa-solid fa-arrow-right ml-2"></i>
+                </button>
+              </div>
             </div>
           ))}
         </div>
