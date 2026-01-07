@@ -57,6 +57,11 @@ const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
     }
   ];
 
+  const handleTechClick = (name: string) => {
+    const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(name + " technology training 2026")}`;
+    window.open(searchUrl, '_blank');
+  };
+
   const navItems = [
     { id: 'home', label: 'Home' },
     { id: 'tech', label: 'Tech Matrix' },
@@ -117,11 +122,16 @@ const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
                          <h4 className="text-[9px] font-black text-indigo-500 uppercase tracking-widest border-b border-indigo-500/10 pb-2">{category.title}</h4>
                          <div className="space-y-1">
                            {category.items.map(item => (
-                             <div key={item.name} className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 transition-colors cursor-pointer group/item">
+                             <div 
+                               key={item.name} 
+                               onClick={() => handleTechClick(item.name)}
+                               className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 transition-colors cursor-pointer group/item"
+                             >
                                 <div className="w-6 h-6 rounded bg-white/5 flex items-center justify-center group-hover/item:bg-indigo-600 transition-colors">
                                    <i className={`fa-solid ${item.icon} text-[10px] text-slate-400 group-hover/item:text-white`}></i>
                                 </div>
                                 <span className="text-[10px] font-bold text-slate-400 group-hover/item:text-white transition-colors">{item.name}</span>
+                                <i className="fa-solid fa-arrow-up-right-from-square text-[8px] text-slate-700 opacity-0 group-hover/item:opacity-100 transition-opacity"></i>
                              </div>
                            ))}
                          </div>

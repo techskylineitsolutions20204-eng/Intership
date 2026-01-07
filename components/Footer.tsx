@@ -25,6 +25,11 @@ const Footer: React.FC<FooterProps> = ({ setActiveTab }) => {
     }
   ];
 
+  const handleTechSearch = (skill: string) => {
+    const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(skill + " industry documentation 2026")}`;
+    window.open(searchUrl, '_blank');
+  };
+
   return (
     <footer className="bg-slate-900 text-slate-400 py-20 border-t border-white/5 relative overflow-hidden">
       {/* Decorative background element */}
@@ -135,9 +140,10 @@ const Footer: React.FC<FooterProps> = ({ setActiveTab }) => {
                 </h5>
                 <ul className="space-y-3">
                   {group.skills.map((skill, j) => (
-                    <li key={j} className="text-[10px] font-bold text-slate-500 hover:text-white transition-colors cursor-default flex items-center gap-2">
-                      <span className="w-1 h-1 bg-slate-800 rounded-full"></span>
+                    <li key={j} className="text-[10px] font-bold text-slate-500 hover:text-white transition-colors cursor-pointer flex items-center gap-2 group/skill" onClick={() => handleTechSearch(skill)}>
+                      <span className="w-1 h-1 bg-slate-800 group-hover/skill:bg-indigo-500 rounded-full transition-colors"></span>
                       {skill}
+                      <i className="fa-solid fa-magnifying-glass text-[7px] opacity-0 group-hover/skill:opacity-30 transition-opacity"></i>
                     </li>
                   ))}
                 </ul>

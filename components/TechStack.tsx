@@ -59,6 +59,11 @@ const TechStack: React.FC<TechStackProps> = ({ onApply }) => {
     }
   ], []);
 
+  const handleSkillClick = (skill: string) => {
+    const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(skill + " implementation guide 2026")}`;
+    window.open(searchUrl, '_blank');
+  };
+
   const filteredCategories = useMemo(() => {
     const query = searchQuery.toLowerCase().trim();
     if (!query) return techCategories;
@@ -99,10 +104,15 @@ const TechStack: React.FC<TechStackProps> = ({ onApply }) => {
               <h3 className="text-2xl font-black text-white mb-4 leading-tight">{cat.title}</h3>
               <div className="space-y-3 mb-10">
                 {cat.skills.map((skill, i) => (
-                  <div key={i} className="flex items-center text-slate-400 text-sm font-medium">
-                    <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 mr-3"></div>
+                  <button 
+                    key={i} 
+                    onClick={() => handleSkillClick(skill)}
+                    className="flex items-center text-slate-400 text-sm font-medium hover:text-white transition-colors group/skill w-full text-left"
+                  >
+                    <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 mr-3 group-hover/skill:scale-150 transition-transform"></div>
                     {skill}
-                  </div>
+                    <i className="fa-solid fa-external-link ml-auto text-[8px] opacity-0 group-hover/skill:opacity-50 transition-opacity"></i>
+                  </button>
                 ))}
               </div>
               <div className="flex items-center justify-between pt-6 border-t border-white/5">
