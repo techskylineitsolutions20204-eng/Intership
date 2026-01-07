@@ -10,10 +10,10 @@ const TechStack: React.FC<TechStackProps> = ({ onApply }) => {
 
   const techCategories = useMemo(() => [
     {
-      title: "AI & Intelligence",
+      title: "Agentic & Gen AI",
       icon: "fa-robot",
       color: "from-purple-600 to-indigo-700",
-      skills: ["AI with Data Science", "Foundation of AI", "AI Automation", "Python Mastery"],
+      skills: ["Agentic AI Workflows", "Generative AI Engineering", "Multi-Agent Systems", "Neural Orchestration"],
       difficulty: "Advanced",
       demand: "Critical"
     },
@@ -81,7 +81,7 @@ const TechStack: React.FC<TechStackProps> = ({ onApply }) => {
               type="text" 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search SAP, Oracle, AI, Cyber..."
+              placeholder="Search SAP, Oracle, AI, Agentic..."
               className="w-full pl-16 pr-8 py-5 bg-white/5 border border-white/10 rounded-[2rem] focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all text-white text-lg placeholder:text-slate-600"
             />
             <div className="absolute inset-y-0 left-6 flex items-center pointer-events-none">

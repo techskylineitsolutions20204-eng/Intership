@@ -35,6 +35,19 @@ const SelfLearning: React.FC = () => {
 
   const modules: Module[] = [
     {
+      id: 'agentic-ai-orchestration',
+      title: "Agentic AI: Multi-Agent Orchestration",
+      category: "Elite Track",
+      duration: "110 mins",
+      embedId: "q6f_N7J-ZWA",
+      recordedAt: "Jan 15, 2026",
+      instructor: "Abhinav Joseph",
+      labUrl: "#",
+      description: "Learn to build autonomous agents using frameworks like CrewAI and AutoGen. Master the art of task delegation and tool calling.",
+      tasks: ["Agent Persona Design", "Tool Calling & Function Definitions", "ReAct Prompting Strategies", "Inter-agent Communication"],
+      liveNotes: "Production Insight:\n- Agents must have well-defined roles\n- Tool validation is critical for safety\n- Orchestration loops need termination conditions"
+    },
+    {
       id: 'gcp-genai-mastery',
       title: "Google Cloud: GenAI Path",
       category: "Elite Certification",
@@ -78,19 +91,6 @@ const SelfLearning: React.FC = () => {
       platformColor: "indigo",
       icon: "fa-brain-circuit",
       liveNotes: "Essential for all engineering roles. Focus on iterative refinement of prompts."
-    },
-    {
-      id: 'ai-ds-mastery',
-      title: "AI & Data Science Deep Dive",
-      category: "Skyline Original",
-      duration: "120 mins",
-      embedId: "i_LwzRVP7bg",
-      recordedAt: "Oct 12, 2025",
-      instructor: "Dr. Sarah Chen",
-      labUrl: "#",
-      description: "Session covering the complete pipeline from raw data to predictive modeling using Scikit-Learn and Pandas.",
-      tasks: ["Data Cleaning Workflows", "Feature Engineering", "Model Evaluation Metrics"],
-      liveNotes: "Notes:\n- Standardization of data is crucial\n- Feature importance visualization\n- Cross-validation best practices"
     },
     {
       id: 'fullstack-modern',

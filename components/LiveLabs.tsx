@@ -26,6 +26,24 @@ interface MentorMessage {
 const LiveLabs: React.FC = () => {
   const [labs, setLabs] = useState<LabInstance[]>([
     {
+      id: 'agentic-ai-sandbox',
+      name: "Agentic AI & GenAI Lab",
+      type: "Multi-Agent Systems Sandbox",
+      status: 'offline',
+      tools: ['CrewAI', 'AutoGen', 'LangChain', 'Gemini SDK'],
+      specs: "High-Compute GPU Cluster / Python 3.12",
+      icon: "fa-robot",
+      latency: "0ms",
+      uptime: "0%",
+      embedId: "q6f_N7J-ZWA",
+      tasks: [
+        "Initialize CrewAI Orchestrator",
+        "Define Autonomous Tool Definitions",
+        "Test Multi-agent Collaboration Loop",
+        "Audit Agent ReAct reasoning traces"
+      ]
+    },
+    {
       id: 'sap-h4-hana',
       name: "Sap H4 Hana Cloud Hub",
       type: "High-Performance ERP Practice",
@@ -59,24 +77,6 @@ const LiveLabs: React.FC = () => {
         "Sync Unifier Business Processes",
         "Generate Global Resource Report",
         "Export Primavera XML Template"
-      ]
-    },
-    {
-      id: 'ai-ds-automation',
-      name: "AI & Data Science Suite",
-      type: "Advanced Automation Cluster",
-      status: 'offline',
-      tools: ['Python', 'TensorFlow', 'RPA Tools', 'Power BI'],
-      specs: "NVIDIA A100 GPU / 80GB VRAM",
-      icon: "fa-robot",
-      latency: "0ms",
-      uptime: "0%",
-      embedId: "5sLYA48vW3U",
-      tasks: [
-        "Train Neural Automation Script",
-        "Configure RPA Workflow Orchestrator",
-        "Design Power BI Data Pipeline",
-        "Deploy Python Model to Edge 5G"
       ]
     },
     {

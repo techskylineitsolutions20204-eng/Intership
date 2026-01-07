@@ -13,9 +13,9 @@ const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
     {
       title: 'AI & Data Intelligence',
       items: [
+        { name: 'Agentic AI Frameworks', icon: 'fa-robot' },
+        { name: 'Generative AI Foundations', icon: 'fa-sparkles' },
         { name: 'AI with Data Science', icon: 'fa-brain' },
-        { name: 'Foundation of AI', icon: 'fa-atom' },
-        { name: 'AI Automation', icon: 'fa-robot' },
         { name: 'Python for AI', icon: 'fa-brands fa-python' }
       ]
     },
